@@ -18,6 +18,17 @@ function App() {
           Learn React
         </a>
       </header>
+      <main>
+        <h1>Welcome to the React App</h1>
+        <p>This is a simple React application.</p>
+        <p>It is set up with a basic structure and some styling.</p>
+        <p>You can start building your application from here.</p>
+        <p>Feel free to modify the code and experiment with different features.</p>
+        <p>Happy coding!</p>
+      </main>
+      <footer>
+        <p>&copy; 2023 Your Name. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
