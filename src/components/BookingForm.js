@@ -20,6 +20,10 @@ export default function BookingForm({ service }) {
 
   const fetchBookedSlots = useCallback(
     async (date) => {
+      if (isNaN(Date.parse(date))) {
+        console.error("Invalid date format:", date);
+        return [];
+      }
       const formattedDate = new Date(date).toISOString().split("T")[0];
       const { data, error } = await supabase
         .from("bookings")
