@@ -46,7 +46,7 @@ export default function HomePage() {
       <img
         src="/framsida.png"
         alt="Två tjejer med hund"
-        className="w-full max-w-xl h-auto rounded-2xl shadow-xl mb-10 w-full max-w-2xl"
+        className="w-full max-w-xl h-auto rounded-2xl shadow-xl mb-10"
       />
 
       {/* Admin Icon Link */}
