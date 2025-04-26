@@ -112,7 +112,8 @@ export default function BookingForm({ service }) {
 
                         Vänliga hälsningar,
                         Stella och Isabel på Hjälpsamma tjänster
-                      `,    
+                        ✉️Hjalpsammatjanster@gmail.com
+                      `,   
             },
             process.env.REACT_APP_EMAILJS_PUBLIC_KEY
           );
