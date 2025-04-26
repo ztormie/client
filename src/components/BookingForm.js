@@ -111,7 +111,7 @@ export default function BookingForm({ service }) {
                         Vi ser fram emot att hjälpa dig! Om du har några frågor, tveka inte att kontakta oss.
 
                         Vänliga hälsningar,
-                        Stella och Isabel pa Hjälpsamma tjanster
+                        Stella och Isabel på Hjälpsamma tjänster
                       `,    
             },
             process.env.REACT_APP_EMAILJS_PUBLIC_KEY
@@ -137,7 +137,7 @@ export default function BookingForm({ service }) {
           setTimeout(() => {
             setEmailSent(false);
             window.location.href = "/bokning/bekräftelse";
-          }, 2000);
+          }, 500);
         
         } catch (error) {
           console.error("Failed to send email:", error);
