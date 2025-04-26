@@ -122,13 +122,15 @@ export default function BookingForm({ service }) {
             time: "",
           });
         
-          setEmailSent(true); // 👈 Show success message!
+            // 👈 Show success message!
 
-          {emailSent && (
-            <div className="bg-green-100 text-green-800 p-4 rounded mb-4 text-center">
-              Tack! Ditt bokningsmeddelande har skickats. Vi återkommer så snart som möjligt! ✅
-            </div>
-          )}
+            setEmailSent(true);
+
+            // Display success message for 2 seconds before redirecting
+            setTimeout(() => {
+            setEmailSent(false);
+            window.location.href = "/bokning/bekräftelse";
+            }, 2000);}
           
           // Wait 2 seconds, then redirect
           setTimeout(() => {
