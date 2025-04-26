@@ -87,12 +87,12 @@ export default function BookingForm({ service }) {
         });
     
         try {
-          emailjs.send(
+          const result = await emailjs.send(
             process.env.REACT_APP_EMAILJS_SERVICE_ID,
             process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
             {
-              user_name: form.name,       // Match {{user_name}} in your EmailJS template
-              user_email: form.email,     // Match {{user_email}} in your EmailJS template
+              user_name: form.name,
+              user_email: form.email,
               message: `
                 Bokning:
                 Namn: ${form.name}
@@ -106,14 +106,10 @@ export default function BookingForm({ service }) {
               `
             },
             process.env.REACT_APP_EMAILJS_PUBLIC_KEY
-          )
-          .then((result) => {
-            console.log("Email sent successfully:", result.text);
-          })
-          .catch((error) => {
-            console.error("Failed to send email:", error);
-          });
-    
+          );
+          
+          console.log("Email sent successfully:", result.text);
+          
           setForm({
             name: "",
             email: "",
@@ -123,11 +119,14 @@ export default function BookingForm({ service }) {
             date: "",
             time: "",
           });
-    
+        
           window.location.href = "/bokning/bekräftelse";
+        
         } catch (error) {
-          console.error("Unexpected error:", error);
+          console.error("Failed to send email:", error);
         }
+
+        window.location.href = "/bokning/bekräftelse";
       }
     };
 
