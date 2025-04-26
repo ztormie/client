@@ -1,7 +1,9 @@
 import React from "react";
 import './App.css';
 import { Link } from "react-router-dom";
-import AdminIcon from "./components/AdminIcon";  // Ensure AdminIcon is correctly imported
+import React, { lazy, Suspense } from "react";
+import framsidaImage from "./assets/framsida.png"; // Import the image
+const AdminIcon = lazy(() => import("./components/AdminIcon")); // Lazy load AdminIcon
 
 export default function HomePage() {
   return (
@@ -15,22 +17,21 @@ export default function HomePage() {
       {/* Service buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 mb-12 w-full max-w-2xl">
         <div className="bg-red-50 shadow-md rounded-xl p-4 h-60 flex flex-col items-center justify-center">
-          <span className="text-3xl mb-2">🐾</span>
-          <Link to="/bokning/hund" className="bg-yellow-200 hover:bg-blue-200 text-orange-900 font-semibold py-2 px-4 rounded-xl text-center">
+          <Link to="/bokning/hund" className="bg-yellow-200 hover:bg-yellow-300 text-orange-900 font-semibold py-2 px-4 rounded-xl text-center">
             Hundpassning
           </Link>
         </div>
 
         <div className="bg-red-50 shadow-md rounded-xl p-4 h-60 flex flex-col items-center justify-center">
           <span className="text-3xl mb-2">👶</span>
-          <Link to="/bokning/barn" className="bg-yellow-200 hover:bg-blue-200 text-orange-900 font-semibold py-2 px-4 rounded-xl">
+          <Link to="/bokning/barn" className="bg-yellow-200 hover:bg-yellow-300 text-orange-900 font-semibold py-2 px-4 rounded-xl">
             Barnpassning
           </Link>
         </div>
 
         <div className="bg-red-50 shadow-md rounded-xl p-4 h-60 flex flex-col items-center justify-center">
           <span className="text-3xl mb-2">🛒</span>
-          <Link to="/bokning/arenden" className="bg-yellow-200 hover:bg-blue-200 text-amber-900 font-semibold py-2 px-4 rounded-xl">
+          <Link to="/bokning/arenden" className="bg-yellow-200 hover:bg-blue-200 text-orange-900 font-semibold py-2 px-4 rounded-xl">
             Hjälp med ärenden
           </Link>
         </div>
@@ -44,13 +45,16 @@ export default function HomePage() {
 
       {/* Illustration */}
       <img
-        src="/framsida.png"
+        src={framsidaImage}
         alt="Två tjejer med hund"
-        className="w-full max-w-xl h-auto rounded-2xl shadow-xl mb-10 w-full max-w-2xl"
+        className="h-auto rounded-2xl shadow-xl mb-10 w-full max-w-2xl"
       />
 
       {/* Admin Icon Link */}
-      <AdminIcon />
+      {/* The AdminIcon component provides a shortcut for administrators to access admin tools or settings. */}
+      <Suspense fallback={<div>Loading admin tools...</div>}>
+        <AdminIcon />
+      </Suspense>
     </div>
   );
 }
