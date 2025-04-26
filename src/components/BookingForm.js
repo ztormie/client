@@ -96,16 +96,24 @@ export default function BookingForm({ service }) {
               user_name: form.name,
               user_email: form.email,
               message: `
-                Bokning:
-                Namn: ${form.name}
-                E-post: ${form.email}
-                Telefon: ${form.phone}
-                Område: ${form.area}
-                Meddelande: ${form.message}
-                Datum: ${form.date}
-                Tid: ${form.time}
-                Tjänst: ${service}
-              `
+                        🎉 Bokningsbekräftelse 🎉
+                        
+                        Tack för din bokning, ${form.name}!
+                        
+                        Här är detaljerna för din bokning:
+                        - 📅 Datum: ${form.date}
+                        - ⏰ Tid: ${form.time}
+                        - 📍 Område: ${form.area}
+                        - 📝 Meddelande: ${form.message}
+                        - 📞 Telefon: ${form.phone}
+                        - ✉️ E-post: ${form.email}
+                        - 🛠️ Tjänst: ${service}
+                        
+                        Vi ser fram emot att hjälpa dig! Om du har några frågor, tveka inte att kontakta oss.
+
+                        Vänliga hälsningar,
+                        [Ditt Företagsnamn]
+                      `,    
             },
             process.env.REACT_APP_EMAILJS_PUBLIC_KEY
           );
@@ -128,15 +136,15 @@ export default function BookingForm({ service }) {
 
           // Display success message for 2 seconds before redirecting
           setTimeout(() => {
-          setEmailSent(false);
-          window.location.href = "/bokning/bekräftelse";
+            setEmailSent(false);
+            window.location.href = "/bokning/bekräftelse";
           }, 2000);
         
         } catch (error) {
           console.error("Failed to send email:", error);
         }
-        }        
-      }; // Closing brace for handleSubmit function
+      }
+    };
 
   return (
     <form onSubmit={handleSubmit} className="bg-yellow-50 w-full max-w-3xl shadow-md rounded-xl p-6 mb-8 space-y-4">
