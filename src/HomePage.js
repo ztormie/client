@@ -1,7 +1,6 @@
-import React from "react";
+import React, { lazy, Suspense } from "react";
 import './App.css';
 import { Link } from "react-router-dom";
-import React, { lazy, Suspense } from "react";
 import framsidaImage from "./assets/framsida.png"; // Import the image
 const AdminIcon = lazy(() => import("./components/AdminIcon")); // Lazy load AdminIcon
 
