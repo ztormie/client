@@ -2,10 +2,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabase";
 import { generateTimeSlots } from "../utils/generateSlots";
 import emailjs from "@emailjs/browser";
-const [emailSent, setEmailSent] = useState(false);
 
 
 export default function BookingForm({ service }) {
+  const [emailSent, setEmailSent] = useState(false);
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -123,7 +123,13 @@ export default function BookingForm({ service }) {
           });
         
           setEmailSent(true); // 👈 Show success message!
-        
+
+          {emailSent && (
+            <div className="bg-green-100 text-green-800 p-4 rounded mb-4 text-center">
+              Tack! Ditt bokningsmeddelande har skickats. Vi återkommer så snart som möjligt! ✅
+            </div>
+          )}
+          
           // Wait 2 seconds, then redirect
           setTimeout(() => {
             window.location.href = "/bokning/bekräftelse";
