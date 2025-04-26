@@ -62,40 +62,50 @@ export default function BookingForm({ service }) {
     form.date.trim() !== "" &&
     form.time.trim() !== "";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.log("Form submitted");
-
-    if (!isFormComplete) return;
-
-    const { error } = await supabase
-      .from("bookings")
-      .insert([{ ...form, service_type: service }]);
-
-    if (error) {
-      alert("Fel vid bokning: " + error.message);
-    } else {
-      console.log("Sending EmailJS Payload:", {
-        name: form.name,
-        email: form.email,
-        phone: form.phone,
-        area: form.area,
-        message: form.message,
-        date: form.date,
-        time: form.time,
-        service_type: service,
-      });
-
-      try {
-        emailjs
-          .send(
-            "service_ffcittl", // Replace with your actual Service ID
-            "template_d6qj3ww", // Replace with your actual Template ID
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      console.log("Form submitted");
+    
+      if (!isFormComplete) return;
+    
+      const { error } = await supabase
+        .from("bookings")
+        .insert([{ ...form, service_type: service }]);
+    
+      if (error) {
+        alert("Fel vid bokning: " + error.message);
+      } else {
+        console.log("Sending EmailJS Payload:", {
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          area: form.area,
+          message: form.message,
+          date: form.date,
+          time: form.time,
+          service_type: service,
+        });
+    
+        try {
+          emailjs.send(
+            process.env.REACT_APP_EMAILJS_SERVICE_ID,
+            process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
             {
-              name: form.name, // Matches {{name}} in the template
-              email: form.email, // Matches {{email}} in the template
+              user_name: form.name,       // Match {{user_name}} in your EmailJS template
+              user_email: form.email,     // Match {{user_email}} in your EmailJS template
+              message: `
+                Bokning:
+                Namn: ${form.name}
+                E-post: ${form.email}
+                Telefon: ${form.phone}
+                Område: ${form.area}
+                Meddelande: ${form.message}
+                Datum: ${form.date}
+                Tid: ${form.time}
+                Tjänst: ${service}
+              `
             },
-            "igKdhOcJ8_did7bFv" // Replace with your actual Public Key
+            process.env.REACT_APP_EMAILJS_PUBLIC_KEY
           )
           .then((result) => {
             console.log("Email sent successfully:", result.text);
@@ -103,23 +113,23 @@ export default function BookingForm({ service }) {
           .catch((error) => {
             console.error("Failed to send email:", error);
           });
-      } catch (err) {
-        console.error("Error during emailjs.send execution:", err);
+    
+          setForm({
+            name: "",
+            email: "",
+            phone: "",
+            area: "",
+            message: "",
+            date: "",
+            time: "",
+          });
+    
+          window.location.href = "/bokning/bekräftelse";
+        } catch (error) {
+          console.error("Unexpected error:", error);
+        }
       }
-
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        area: "",
-        message: "",
-        date: "",
-        time: "",
-      });
-
-      window.location.href = "/bokning/bekräftelse";
-    }
-  };
+    };
 
   return (
     <form onSubmit={handleSubmit} className="bg-yellow-50 w-full max-w-3xl shadow-md rounded-xl p-6 mb-8 space-y-4">
