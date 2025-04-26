@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../supabase";
 import { generateTimeSlots } from "../utils/generateSlots";
 import emailjs from "@emailjs/browser";
+const [emailSent, setEmailSent] = useState(false);
+
 
 export default function BookingForm({ service }) {
   const [form, setForm] = useState({
@@ -109,7 +111,7 @@ export default function BookingForm({ service }) {
           );
           
           console.log("Email sent successfully:", result.text);
-          
+        
           setForm({
             name: "",
             email: "",
@@ -120,15 +122,18 @@ export default function BookingForm({ service }) {
             time: "",
           });
         
-          window.location.href = "/bokning/bekräftelse";
+          setEmailSent(true); // 👈 Show success message!
+        
+          // Wait 2 seconds, then redirect
+          setTimeout(() => {
+            window.location.href = "/bokning/bekräftelse";
+          }, 2000);
         
         } catch (error) {
           console.error("Failed to send email:", error);
         }
-
-        window.location.href = "/bokning/bekräftelse";
-      }
-    };
+        }        
+      }; // Closing brace for handleSubmit function
 
   return (
     <form onSubmit={handleSubmit} className="bg-yellow-50 w-full max-w-3xl shadow-md rounded-xl p-6 mb-8 space-y-4">
