@@ -69,57 +69,39 @@ export default function BookingForm({ service }) {
     form.time.trim() !== "";
 
     const handleSubmit = async (e) => {
-      e.preventDefault();
-      console.log("Form submitted");
-    
-      if (!isFormComplete) return;
-    
-      const { error } = await supabase
-        .from("bookings")
-        .insert([{ ...form, service_type: service }]);
-    
-      if (error) {
-        alert("Fel vid bokning: " + error.message);
-      } else {
-        console.log("Sending EmailJS Payload:", {
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          area: form.area,
-          message: form.message,
-          date: form.date,
-          time: form.time,
-          service_type: service,
-        });
-    
-          const handleSubmit = async (e) => {
-              e.preventDefault();
-              console.log("Form submitted");
+        e.preventDefault();
+        console.log("Form submitted");
 
-              if (!isFormComplete) return;
+        if (!isFormComplete) return;
 
-              const { error } = await supabase
-                  .from("bookings")
-                  .insert([{ ...form, service_type: service }]);
+        const { error } = await supabase
+            .from("bookings")
+            .insert([{ ...form, service_type: service }]);
 
-              if (error) {
-                  alert("Fel vid bokning: " + error.message);
-              } else {
-                  // Clear form
-                  setForm({
-                      name: "",
-                      email: "",
-                      phone: "",
-                      area: "",
-                      message: "",
-                      date: "",
-                      time: "",
-                  });
+        if (error) {
+            alert("Fel vid bokning: " + error.message);
+        } else {
+            console.log("Sending EmailJS Payload:", {
+                name: form.name,
+                email: form.email,
+                ...
+    });
 
-                  // Redirect after success
-                  window.location.href = "/bokning/bekräftelse";
-              }
-          };
+            // Clear form after booking
+            setForm({
+                name: "",
+                email: "",
+                phone: "",
+                area: "",
+                message: "",
+                date: "",
+                time: "",
+            });
+
+            // Redirect after success
+            window.location.href = "/bokning/bekräftelse";
+        }
+    };
 
 
   return (
