@@ -71,10 +71,11 @@ const AdminPage = () => {
       console.log('Booking updated! Sending confirmation email...');
   
       try {
+        console.log('Trying to send email confirmation to:', editingBooking?.email);
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
           process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-          {
+          console.log('Email payload:', {
             user_name: editingBooking.name, // 👈 important: use editingBooking
             user_email: editingBooking.email,
             message: `
