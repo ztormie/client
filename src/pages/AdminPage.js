@@ -3,13 +3,29 @@ import { supabase } from "../supabase";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../styles/AdminPage.css";
+import { useNavigate } from 'react-router-dom'; // <-- NEW
+
 
 const AdminPage = () => {
+  const navigate = useNavigate(); // <-- NEW
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+  
+      if (!user) {
+        navigate('/login'); // Redirect if not logged in
+      }
+    }
+  
+    checkAuth();
+  }, [navigate]);
+  
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointmentsByDate, setAppointmentsByDate] = useState([]);
   const [bookedDates, setBookedDates] = useState([]);
   const [unconfirmedBookings, setUnconfirmedBookings] = useState([]);
+ 
 
 
   const formatDate = (date) => {
