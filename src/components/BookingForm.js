@@ -81,13 +81,9 @@ export default function BookingForm({ service }) {
         if (error) {
             alert("Fel vid bokning: " + error.message);
         } else {
-            console.log("Sending EmailJS Payload:", {
-                name: form.name,
-                email: form.email,
-                ...
-    });
+            console.log("Booking saved to database!");
 
-            // Clear form after booking
+            // Clear the form after successful booking
             setForm({
                 name: "",
                 email: "",
