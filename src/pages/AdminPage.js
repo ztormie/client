@@ -4,7 +4,7 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "../styles/AdminPage.css";
 import { useNavigate } from 'react-router-dom'; // <-- NEW
-
+import emailjs from '@emailjs/browser'
 
 const AdminPage = () => {
   const navigate = useNavigate(); // <-- NEW
@@ -68,11 +68,47 @@ const AdminPage = () => {
     if (error) {
       console.error('Error saving changes:', error.message);
     } else {
-      console.log('Changes saved!');
-      await refreshAllData(); // Refresh after saving
+      console.log('Booking updated! Sending confirmation email...');
+  
+      try {
+        const result = await emailjs.send(
+          process.env.REACT_APP_EMAILJS_SERVICE_ID,
+          process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+          {
+            user_name: editingBooking.name, // 👈 important: use editingBooking
+            user_email: editingBooking.email,
+            message: `
+              📢 Bokningsändring 📢
+  
+              Hej ${editingBooking.name},
+  
+              Din bokning har ändrats!
+  
+              Nya detaljer:
+              - 📅 Datum: ${editedDate}
+              - ⏰ Tid: ${editedTime}
+              - 📝 Meddelande: ${editedMessage}
+  
+              Tack för att du använder Hjälpsamma Tjänster!
+  
+              Vänliga hälsningar,
+              Stella och Isabel
+            `
+          },
+          process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+        );
+  
+        console.log('Email sent successfully:', result.text);
+  
+      } catch (emailError) {
+        console.error('Failed to send email:', emailError);
+      }
+  
+      await refreshAllData(); // Refresh booking list
       setEditingBooking(null); // Close edit form
     }
   };
+  
 
   // ✅ Approve a booking
   const approveBooking = async (id) => {
