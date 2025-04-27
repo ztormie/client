@@ -19,7 +19,6 @@ function App() {
       if (error) {
         console.error("Supabase error:", error.message);
       } else {
-        console.log("Supabase data:", data);
         setUsers(data);
       }
     };
