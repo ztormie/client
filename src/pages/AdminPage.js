@@ -25,7 +25,11 @@ const AdminPage = () => {
   const [appointmentsByDate, setAppointmentsByDate] = useState([]);
   const [bookedDates, setBookedDates] = useState([]);
   const [unconfirmedBookings, setUnconfirmedBookings] = useState([]);
- 
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [editedDate, setEditedDate] = useState('');
+  const [editedTime, setEditedTime] = useState('');
+  const [editedMessage, setEditedMessage] = useState('');
+
 
 
   const formatDate = (date) => {
@@ -44,6 +48,31 @@ const AdminPage = () => {
     ]);
   };
   
+  const handleEditClick = (appointment) => {
+    setEditingBooking(appointment);
+    setEditedDate(appointment.date);
+    setEditedTime(appointment.time);
+    setEditedMessage(appointment.message || '');
+  };
+  
+  const saveChanges = async (id) => {
+    const { error } = await supabase
+      .from('bookings')
+      .update({
+        date: editedDate,
+        time: editedTime,
+        message: editedMessage,
+      })
+      .eq('id', id);
+  
+    if (error) {
+      console.error('Error saving changes:', error.message);
+    } else {
+      console.log('Changes saved!');
+      await refreshAllData(); // Refresh after saving
+      setEditingBooking(null); // Close edit form
+    }
+  };
 
   // ✅ Approve a booking
   const approveBooking = async (id) => {
@@ -264,9 +293,10 @@ const fetchUnconfirmedBookings = async () => {
         <h2 className="text-xl font-semibold mb-4">Bokningar för {selectedDate.toLocaleDateString()}</h2>
         <div className="mb-6">
           <ul>
-            {appointmentsByDate.length > 0 ? (
-              appointmentsByDate.map((appointment) => (
-                <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
+          {appointmentsByDate.length > 0 ? (
+            appointmentsByDate.map((appointment) => (
+              <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
+                <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-sm font-semibold">{appointment.name}</h3>
@@ -274,26 +304,49 @@ const fetchUnconfirmedBookings = async () => {
                       <p className="text-xs">{appointment.area}</p>
                       <p className="font-semibold text-sm text-yellow-500">{appointment.status}</p>
                     </div>
-                    <div className="flex flex-col space-y-2">
+                    <button
+                      className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                      onClick={() => handleEditClick(appointment)}
+                    >
+                      Ändra
+                    </button>
+                  </div>
+
+                  {/* Expanded form if editing */}
+                  {editingBooking?.id === appointment.id && (
+                    <div className="mt-4 p-2 border rounded bg-gray-100">
+                      <input
+                        type="date"
+                        value={editedDate}
+                        onChange={(e) => setEditedDate(e.target.value)}
+                        className="border p-2 w-full mb-2 rounded"
+                      />
+                      <input
+                        type="time"
+                        value={editedTime}
+                        onChange={(e) => setEditedTime(e.target.value)}
+                        className="border p-2 w-full mb-2 rounded"
+                      />
+                      <textarea
+                        value={editedMessage}
+                        onChange={(e) => setEditedMessage(e.target.value)}
+                        placeholder="Meddelande"
+                        className="border p-2 w-full mb-2 rounded"
+                      ></textarea>
                       <button
-                        className="text-xs bg-yellow-200 text-black py-2 px-4 rounded-md font-bold"
-                        onClick={() => approveBooking(appointment.id)}
+                        className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
+                        onClick={() => saveChanges(appointment.id)}
                       >
-                        Godkänn
-                      </button>
-                      <button
-                        className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
-                        onClick={() => declineBooking(appointment.id)}
-                      >
-                        Avvisa
+                        Spara ändringar
                       </button>
                     </div>
-                  </div>
-                </li>
-              ))
-            ) : (
-              <li>No bookings for this date.</li>
-            )}
+                  )}
+                </div>
+              </li>
+            ))
+          ) : (
+            <li>Inga bokningar för detta datum.</li>
+          )}
           </ul>
         </div>
       </div>
