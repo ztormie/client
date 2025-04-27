@@ -4,6 +4,7 @@ import { supabase } from "./supabase";
 import HomePage from "./HomePage";
 import BookingPage from "./bookingpage";
 import AdminPage from "./pages/AdminPage";
+import LoginPage from "./pages/LoginPage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 
@@ -32,6 +33,7 @@ function App() {
 <Routes>
   <Route path="/" element={<HomePage />} />
   <Route path="/admin" element={<AdminPage />} />
+  <Route path="/login" element={<LoginPage />} />
   <Route path="/bokning/:service" element={<BookingPage />} />
   <Route path="/bokning/bekräftelse" element={<BookingConfirmationPage />} />
 </Routes>
