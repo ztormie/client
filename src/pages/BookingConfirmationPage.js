@@ -1,28 +1,32 @@
 // src/pages/BookingConfirmationPage.js
 import React from "react";
+import Confetti from "react-confetti";
+import { useWindowSize } from '@react-hook/window-size'; // Add this line
 
 const BookingConfirmationPage = () => {
+    const [width, height] = useWindowSize(); // Dynamically get window size for confetti
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-yellow-200 flex items-center justify-center px-4">
-            <div className="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full">
-                <h1 className="text-3xl font-extrabold text-green-600 mb-4 animate-bounce">
-                    🎉 Tack för din bokning!
+        <div className="min-h-screen bg-gradient-to-r from-yellow-100 to-yellow-300 flex items-center justify-center relative overflow-hidden">
+            <Confetti width={width} height={height} numberOfPieces={200} /> {/* 🎉 Add this */}
+            <div className="bg-white p-8 rounded-xl shadow-lg text-center z-10">
+                <h1 className="text-3xl font-extrabold text-green-600 mb-4">
+                      Tack för din bokning! 🎉
                 </h1>
-                <p className="text-md text-gray-800 mb-4">
-                    Vi är så glada att du vill hjälp av oss! 🌟
+                <p className="text-lg text-gray-800 mb-6">
+                    Vi är glada att du kontaktar oss för att hjälpa dig! En bekräftelse skickas till din e-post när bokningen är bekräftad av oss.
                 </p>
-                <p className="text-md text-gray-700 mb-6">
-                    Din förfrågan har tagits emot och vi återkommer med bekräftelse via e-post så snart vi kan.
+                <p className="text-md text-gray-600">
+                    Har du några frågor? Tveka inte att kontakta oss. Vi ser fram emot att träffa dig!
                 </p>
-                <p className="text-sm text-gray-500 italic mb-8">
-                    Tack för att du kontaktar oss!🐾
-                </p>
-                <a
-                    href="/"
-                    className="inline-block bg-green-400 hover:bg-green-500 text-white font-bold py-2 px-6 rounded-full shadow-md transition-all duration-300"
-                >
-                    Tillbaka till startsidan
-                </a>
+                <div className="mt-6">
+                    <a
+                        href="/"
+                        className="bg-green-500 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300"
+                    >
+                        Tillbaka till startsidan
+                    </a>
+                </div>
             </div>
         </div>
     );
