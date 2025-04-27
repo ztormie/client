@@ -120,14 +120,14 @@ const AdminPage = () => {
             .from("bookings")
             .update({ status: "approved" })
             .eq("id", id)
-            .select(); // 👈 important to get the updated row back
+            .select();
 
         if (error) {
             console.error("Error approving booking:", error.message);
             return;
         }
 
-        const booking = data[0]; // 👈 this is the approved booking
+        const booking = data[0];
         console.log("Sending confirmation email for:", booking.email);
 
         try {
@@ -137,17 +137,8 @@ const AdminPage = () => {
                 {
                     user_name: booking.name,
                     user_email: booking.email,
-                    message: `
-          🎉 Din bokning är nu bekräftad! 🎉
-
-          Här är din bokningsinformation:
-          - 📅 Datum: ${booking.date}
-          - ⏰ Tid: ${booking.time}
-          - 📍 Område: ${booking.area}
-          - 📝 Meddelande: ${booking.message || "Inget meddelande"}
-
-          Vi ses snart! Tack för att du bokat med Hjälpsamma Tjänster.
-        `
+                    booking_date: booking.date,
+                    booking_time: booking.time,
                 },
                 process.env.REACT_APP_EMAILJS_PUBLIC_KEY
             );
@@ -159,6 +150,7 @@ const AdminPage = () => {
 
         await refreshAllData();
     };
+
 
   // ✅ Decline a booking
   const declineBooking = async (id) => {
