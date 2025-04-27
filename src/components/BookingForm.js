@@ -92,63 +92,35 @@ export default function BookingForm({ service }) {
           service_type: service,
         });
     
-        try {
-          const result = await emailjs.send(
-            process.env.REACT_APP_EMAILJS_SERVICE_ID,
-            process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
-            {
-              user_name: form.name,
-              user_email: form.email,
-              message: `
-                        🎉 Bokningsbekräftelse 🎉
-                        
-                        Tack för din bokning, ${form.name}!
-                        
-                        Här är detaljerna för din bokning:
-                        - 📅 Datum: ${form.date}
-                        - ⏰ Tid: ${form.time}
-                        - 📍 Område: ${form.area}
-                        - 📝 Meddelande: ${form.message}
-                        - 📞 Telefon: ${form.phone}
-                        - ✉️ E-post: ${form.email}
-                        
-                        Vi ser fram emot att hjälpa dig! Om du har några frågor, tveka inte att kontakta oss.
+          const handleSubmit = async (e) => {
+              e.preventDefault();
+              console.log("Form submitted");
 
-                        Vänliga hälsningar,
-                        Stella och Isabel på Hjälpsamma tjänster
-                        ✉️Hjalpsammatjanster@gmail.com
-                      `,   
-            },
-            process.env.REACT_APP_EMAILJS_PUBLIC_KEY
-          );
-          
-          console.log("Email sent successfully:", result.text);
-        
-          setForm({
-            name: "",
-            email: "",
-            phone: "",
-            area: "",
-            message: "",
-            date: "",
-            time: "",
-          });
-        
-            // 👈 Show success message!
+              if (!isFormComplete) return;
 
-            setEmailSent(true);
+              const { error } = await supabase
+                  .from("bookings")
+                  .insert([{ ...form, service_type: service }]);
 
-          // Display success message for 2 seconds before redirecting
-          setTimeout(() => {
-            setEmailSent(false);
-            window.location.href = "/bokning/bekräftelse";
-          }, 500);
-        
-        } catch (error) {
-          console.error("Failed to send email:", error);
-        }
-      }
-    };
+              if (error) {
+                  alert("Fel vid bokning: " + error.message);
+              } else {
+                  // Clear form
+                  setForm({
+                      name: "",
+                      email: "",
+                      phone: "",
+                      area: "",
+                      message: "",
+                      date: "",
+                      time: "",
+                  });
+
+                  // Redirect after success
+                  window.location.href = "/bokning/bekräftelse";
+              }
+          };
+
 
   return (
     <form onSubmit={handleSubmit} className="bg-yellow-50 w-full max-w-3xl shadow-md rounded-xl p-6 mb-8 space-y-4">
