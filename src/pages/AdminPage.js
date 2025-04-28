@@ -6,7 +6,7 @@ import "../styles/AdminPage.css";
 import { useNavigate } from 'react-router-dom'; // <-- NEW
 import emailjs from '@emailjs/browser'
 import { fetchBlockedSlots } from "../utils/blockedSlotsService";
-
+import { useCallback } from "react"; // <-- Already imported useState etc. Just add useCallback if not there.
 
 
 
@@ -199,10 +199,9 @@ const fetchUnconfirmedBookings = async () => {
     else console.error("Error fetching bookings:", error.message);
   };
 
-    const fetchAppointmentsForSelectedDate = async () => {
+    const fetchAppointmentsForSelectedDate = useCallback(async () => {
         const formattedDate = formatDate(selectedDate);
 
-        // Fetch bookings
         const { data: bookings, error: bookingsError } = await supabase
             .from("bookings")
             .select("*")
@@ -215,20 +214,18 @@ const fetchUnconfirmedBookings = async () => {
             return;
         }
 
-        // Fetch blocked slots
         const blockedSlots = await fetchBlockedSlots(formattedDate);
 
-        // Combine both into one array
         const combinedAppointments = [
             ...bookings.map((b) => ({ ...b, type: "booking" })),
             ...blockedSlots.map((b) => ({ ...b, type: "blocked" })),
         ];
 
-        // Sort by time
         combinedAppointments.sort((a, b) => (a.time > b.time ? 1 : -1));
 
         setAppointmentsByDate(combinedAppointments);
-    };
+    }, [selectedDate]); // 👈 depends on selectedDate
+
 
 
     const fetchBookedDates = async () => {
@@ -260,10 +257,27 @@ const fetchUnconfirmedBookings = async () => {
         setBookedDates(uniqueDates);
     };
 
-  useEffect(() => {
-    fetchBookings();
-    fetchBookedDates();
-  }, []);
+    // ✅ Check if user is logged in
+    useEffect(() => {
+        async function checkAuth() {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                navigate('/login');
+            }
+        }
+        checkAuth();
+    }, [navigate]);
+
+    // ✅ Fetch bookings and calendar data when page loads
+    useEffect(() => {
+        fetchBookings();
+        fetchBookedDates();
+    }, []);
+
+    useEffect(() => {
+        fetchAppointmentsForSelectedDate();
+    }, [selectedDate, fetchAppointmentsForSelectedDate]);
+
 
 
   const tileContent = ({ date }) => {
