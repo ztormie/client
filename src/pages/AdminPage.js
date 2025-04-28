@@ -5,6 +5,8 @@ import "react-calendar/dist/Calendar.css";
 import "../styles/AdminPage.css";
 import { useNavigate } from 'react-router-dom'; // <-- NEW
 import emailjs from '@emailjs/browser'
+import { fetchBlockedSlots } from "../utils/blockedSlotsService";
+
 
 
 
@@ -216,39 +218,66 @@ const fetchUnconfirmedBookings = async () => {
     else console.error("Error fetching bookings:", error.message);
   };
 
-  // ✅ Fetch appointments for selected date
-  const fetchAppointmentsForSelectedDate = async () => {
-    const formattedDate = formatDate(selectedDate);
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .eq("date", formattedDate)
-      .neq("status", "declined")
-      .order("time", { ascending: true });
+    const fetchAppointmentsForSelectedDate = async () => {
+        const formattedDate = formatDate(selectedDate);
 
-    if (!error) setAppointmentsByDate(data);
-    else console.error("Error fetching by date:", error.message);
-  };
+        // Fetch bookings
+        const { data: bookings, error: bookingsError } = await supabase
+            .from("bookings")
+            .select("*")
+            .eq("date", formattedDate)
+            .neq("status", "declined")
+            .order("time", { ascending: true });
 
-  // ✅ Fetch booked dates for calendar
-  const fetchBookedDates = async () => {
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("date")
-      .not("status", "eq", "approved")
-      .neq("status", "declined");
+        if (bookingsError) {
+            console.error("Error fetching bookings:", bookingsError.message);
+            return;
+        }
 
-    if (!error) {
-      const dates = data.map((booking) => {
-        const date = new Date(booking.date);
-        const adjustedDate = new Date(date.setHours(0, 0, 0, 0));
-        return adjustedDate.toISOString().split("T")[0];
-      });
-      setBookedDates(dates);
-    } else {
-      console.error("Error fetching booked dates:", error.message);
-    }
-  };
+        // Fetch blocked slots
+        const blockedSlots = await fetchBlockedSlots(formattedDate);
+
+        // Combine both into one array
+        const combinedAppointments = [
+            ...bookings.map((b) => ({ ...b, type: "booking" })),
+            ...blockedSlots.map((b) => ({ ...b, type: "blocked" })),
+        ];
+
+        // Sort by time
+        combinedAppointments.sort((a, b) => (a.time > b.time ? 1 : -1));
+
+        setAppointmentsByDate(combinedAppointments);
+    };
+
+
+    const fetchBookedDates = async () => {
+        const { data: bookingDates, error: bookingError } = await supabase
+            .from("bookings")
+            .select("date")
+            .not("status", "eq", "approved")
+            .neq("status", "declined");
+
+        const { data: blockedDates, error: blockedError } = await supabase
+            .from("blocked_slots")
+            .select("date");
+
+        if (bookingError || blockedError) {
+            console.error("Error fetching dates:", bookingError?.message || blockedError?.message);
+            return;
+        }
+
+        const allDates = [
+            ...(bookingDates?.map(b => b.date) || []),
+            ...(blockedDates?.map(b => b.date) || []),
+        ];
+
+        const uniqueDates = [...new Set(allDates.map(date => {
+            const d = new Date(date);
+            return d.toISOString().split("T")[0];
+        }))];
+
+        setBookedDates(uniqueDates);
+    };
 
   useEffect(() => {
     fetchBookings();
