@@ -186,25 +186,6 @@ const fetchUnconfirmedBookings = async () => {
     }
   };
   
-
-  useEffect(() => {
-    const fetchUnconfirmedBookings = async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("*")
-        .eq("status", "PENDING")
-        .order("date", { ascending: true });
-  
-      if (error) {
-        console.error("Error fetching unconfirmed bookings:", error.message);
-        return;
-      }
-      setUnconfirmedBookings(data);
-    };
-  
-    fetchUnconfirmedBookings();
-  }, []);
-
   // ✅ Fetch upcoming appointments
   const fetchBookings = async () => {
     const { data, error } = await supabase
