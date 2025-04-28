@@ -206,8 +206,9 @@ const fetchUnconfirmedBookings = async () => {
             .from("bookings")
             .select("*")
             .eq("date", formattedDate)
-            .neq("status", "declined")
+            .eq("status", "approved")
             .order("time", { ascending: true });
+
 
         if (bookingsError) {
             console.error("Error fetching bookings:", bookingsError.message);
@@ -278,6 +279,9 @@ const fetchUnconfirmedBookings = async () => {
         fetchAppointmentsForSelectedDate();
     }, [selectedDate, fetchAppointmentsForSelectedDate]);
 
+    useEffect(() => {
+        fetchUnconfirmedBookings();
+    }, []);
 
 
   const tileContent = ({ date }) => {
