@@ -10,6 +10,7 @@ import { fetchBlockedSlots } from "../utils/blockedSlotsService";
 const AdminPage = () => {
   const navigate = useNavigate();
 
+  // State variables for various appointment data and form inputs
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [appointmentsByDate, setAppointmentsByDate] = useState([]);
@@ -24,6 +25,7 @@ const AdminPage = () => {
   const [blockType, setBlockType] = useState('once');
   const [blockedSlots, setBlockedSlots] = useState([]);
 
+  // Ensure the user is authenticated; redirect if not
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -32,6 +34,7 @@ const AdminPage = () => {
     checkAuth();
   }, [navigate]);
 
+  // Format a JS date to yyyy-mm-dd
   const formatDate = (date) => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -39,6 +42,7 @@ const AdminPage = () => {
     return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
   };
 
+  // Refresh all relevant data from the database
   const refreshAllData = async () => {
     await Promise.all([
       fetchBookings(),
@@ -48,6 +52,7 @@ const AdminPage = () => {
     ]);
   };
 
+  // Prepare booking info for editing
   const handleEditClick = (appointment) => {
     setEditingBooking(appointment);
     setEditedDate(appointment.date);
@@ -55,6 +60,7 @@ const AdminPage = () => {
     setEditedMessage(appointment.message || '');
   };
 
+  // Add a new blocked time slot
   const handleBlockTimeSubmit = async (e) => {
     e.preventDefault();
     const date = formatDate(selectedDate);
@@ -74,6 +80,7 @@ const AdminPage = () => {
     }
   };
 
+  // Remove an existing blocked time
   const handleRemoveBlockedSlot = async (blockedSlotId) => {
     const { error } = await supabase.from('blocked_slots').delete().eq('id', blockedSlotId);
     if (error) {
@@ -83,6 +90,7 @@ const AdminPage = () => {
     }
   };
 
+  // Fetch appointments and blocked slots for the selected date
   const fetchAppointmentsForSelectedDate = useCallback(async () => {
     const formattedDate = formatDate(selectedDate);
     const { data: bookings, error: bookingsError } = await supabase
@@ -102,6 +110,7 @@ const AdminPage = () => {
     setAppointmentsByDate(combined);
   }, [selectedDate]);
 
+  // Fetch all bookings to display upcoming ones
   const fetchBookings = async () => {
     const { data, error } = await supabase
       .from("bookings")
@@ -112,6 +121,7 @@ const AdminPage = () => {
     if (!error) setUpcomingAppointments(data);
   };
 
+  // Fetch all booked and blocked dates to mark the calendar
   const fetchBookedDates = async () => {
     const { data: bookingDates } = await supabase.from("bookings").select("date").eq("status", "approved");
     const { data: blockedDates } = await supabase.from("blocked_slots").select("date");
@@ -123,6 +133,7 @@ const AdminPage = () => {
     setBookedDates(uniqueDates);
   };
 
+  // Fetch all pending bookings
   const fetchUnconfirmedBookings = async () => {
     const { data, error } = await supabase
       .from("bookings")
@@ -132,6 +143,7 @@ const AdminPage = () => {
     if (!error) setUnconfirmedBookings(data);
   };
 
+  // Display dots on calendar for booked dates
   const tileContent = ({ date }) => {
     const dateString = date.toISOString().split("T")[0];
     if (bookedDates.includes(dateString)) {
@@ -140,22 +152,25 @@ const AdminPage = () => {
     return null;
   };
 
+  // Initial data fetch on mount
   useEffect(() => {
     fetchBookings();
     fetchBookedDates();
   }, []);
 
+  // Fetch appointments when date changes
   useEffect(() => {
     fetchAppointmentsForSelectedDate();
   }, [selectedDate, fetchAppointmentsForSelectedDate]);
 
+  // Fetch pending bookings on mount
   useEffect(() => {
     fetchUnconfirmedBookings();
   }, []);
 
   return (
     <div className="min-h-screen bg-yellow-50">
-      {/* Calendar and Block Form Side-by-Side */}
+      {/* ✅ Blockering Panel bredvid kalendern */}
       <div className="flex flex-col md:flex-row gap-4 p-4">
         <div className="md:w-1/2 bg-yellow-50 p-4 rounded-md shadow-md">
           <h2 className="text-xl font-semibold mb-4">Kalender</h2>
