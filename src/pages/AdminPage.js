@@ -290,157 +290,165 @@ const fetchUnconfirmedBookings = async () => {
       return <div className="dot" style={{ backgroundColor: "pink", borderRadius: "50%", width: "5px", height: "5px", margin: "auto" }}></div>;
     }
     return null;
-  };
+    };
 
-  return (
-    <div className="min-h-screen bg-yellow-50">
-      <header className="bg-white text-black p-2 text-center rounded-md shadow-md mb-4 mt-4 ml-4 mr-4">
-        <h1 className="text-2xl font-bold">Boknings Översikt</h1>
-      </header>
+    const handleRemoveBlockedSlot = async (blockedSlotId) => {
+        const { error } = await supabase
+            .from('blocked_slots')
+            .delete()
+            .eq('id', blockedSlotId);
 
-      {/* ✅ Kommande bokningar */}
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Kommande bokningar</h2>
-        <div className="mb-6">
-          <ul>
-            {upcomingAppointments.length > 0 ? (
-              upcomingAppointments.map((appointment) => (
-                <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h3 className="text-sm font-semibold">{appointment.name}</h3>
-                      <p className="text-xs">{appointment.date}, {appointment.time}, {appointment.area}, {appointment.service_type}</p>
-                      <p className="text-xs italic"> {appointment.message || "Inget meddelande"}</p>
-                    </div>
-                    <div className="flex flex-col space-y-2">
-                    </div>
+        if (error) {
+            console.error('Error removing blocked slot:', error.message);
+            alert('Något gick fel. Kunde inte ta bort blockeringen.');
+        } else {
+            alert('Blockeringen togs bort!');
+            await refreshAllData(); // refresh calendar and appointments
+        }
+    };
+
+
+return (
+  <div className="min-h-screen bg-yellow-50">
+    <header className="bg-white text-black p-2 text-center rounded-md shadow-md mb-4 mt-4 ml-4 mr-4">
+      <h1 className="text-2xl font-bold">Boknings Översikt</h1>
+    </header>
+
+    {/* ✅ Kommande bokningar */}
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">Kommande bokningar</h2>
+      <div className="mb-6">
+        <ul>
+          {upcomingAppointments.length > 0 ? (
+            upcomingAppointments.map((appointment) => (
+              <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-semibold">{appointment.name}</h3>
+                    <p className="text-xs">
+                      {appointment.date}, {appointment.time}, {appointment.area}, {appointment.service_type}
+                    </p>
+                    <p className="text-xs italic">{appointment.message || "Inget meddelande"}</p>
                   </div>
-                </li>
-              ))
-            ) : (
-              <li>No upcoming bookings.</li>
-            )}
-          </ul>
-        </div>
+                  <div className="flex flex-col space-y-2"></div>
+                </div>
+              </li>
+            ))
+          ) : (
+            <li>No upcoming bookings.</li>
+          )}
+        </ul>
       </div>
+    </div>
 
-{/* ✅ Oconfirmade bokningar (PENDING) */}
-<div className="p-4">
-  <h2 className="text-xl font-semibold mb-4">Obekräftade bokningar</h2>
-  <div className="mb-6">
-    <ul>
-      {unconfirmedBookings.length > 0 ? (
-        unconfirmedBookings.map((booking) => (
-          <li key={booking.id} className="bg-white p-4 rounded-md shadow-md mb-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-sm font-semibold">{booking.name}</h3>
-                <p className="text-xs">{booking.date}, {booking.time}</p>
-                <p className="text-xs">{booking.area}</p>
-                <p className="font-semibold text-sm text-yellow-500">{booking.status}</p>
-              </div>
-              <div className="flex flex-col space-y-2">
-                <button
-                  className="text-xs bg-green-200 text-black py-2 px-4 rounded-md font-bold"
-                  onClick={() => approveBooking(booking.id)}
-                >
-                  Godkänn
-                </button>
-                <button
-                  className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
-                  onClick={() => declineBooking(booking.id)}
-                >
-                  Avvisa
-                </button>
-              </div>
-            </div>
-          </li>
-        ))
-      ) : (
-        <li>Inga obekräftade bokningar.</li>
-      )}
-    </ul>
-  </div>
-</div>
-
-
-
-
-      {/* ✅ Kalender */}
-      <div className="calendar-container p-4">
-        <h2 className="text-xl font-semibold mb-4">Kalender</h2>
-        <div className="bg-yellow-50 p-4 rounded-md shadow-md">
-          <Calendar
-            onChange={setSelectedDate}
-            value={selectedDate}
-            tileContent={tileContent}
-          />
-        </div>
+    {/* ✅ Obekräftade bokningar (PENDING) */}
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">Obekräftade bokningar</h2>
+      <div className="mb-6">
+        <ul>
+          {unconfirmedBookings.length > 0 ? (
+            unconfirmedBookings.map((booking) => (
+              <li key={booking.id} className="bg-white p-4 rounded-md shadow-md mb-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h3 className="text-sm font-semibold">{booking.name}</h3>
+                    <p className="text-xs">{booking.date}, {booking.time}</p>
+                    <p className="text-xs">{booking.area}</p>
+                    <p className="font-semibold text-sm text-yellow-500">{booking.status}</p>
+                  </div>
+                  <div className="flex flex-col space-y-2">
+                    <button
+                      className="text-xs bg-green-200 text-black py-2 px-4 rounded-md font-bold"
+                      onClick={() => approveBooking(booking.id)}
+                    >
+                      Godkänn
+                    </button>
+                    <button
+                      className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
+                      onClick={() => declineBooking(booking.id)}
+                    >
+                      Avvisa
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))
+          ) : (
+            <li>Inga obekräftade bokningar.</li>
+          )}
+        </ul>
       </div>
+    </div>
 
-      {/* ✅ Bokningar för valt datum */}
-      <div className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Bokningar för {selectedDate.toLocaleDateString()}</h2>
-        <div className="mb-6">
-          <ul>
+    {/* ✅ Kalender */}
+    <div className="calendar-container p-4">
+      <h2 className="text-xl font-semibold mb-4">Kalender</h2>
+      <div className="bg-yellow-50 p-4 rounded-md shadow-md">
+        <Calendar
+          onChange={setSelectedDate}
+          value={selectedDate}
+          tileContent={tileContent}
+        />
+      </div>
+    </div>
+
+    {/* ✅ Bokningar för valt datum */}
+    <div className="p-4">
+      <h2 className="text-xl font-semibold mb-4">
+        Bokningar för {selectedDate.toLocaleDateString()}
+      </h2>
+      <div className="mb-6">
+        <ul>
           {appointmentsByDate.length > 0 ? (
             appointmentsByDate.map((appointment) => (
               <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-sm font-semibold">{appointment.name}</h3>
-                      <p className="text-xs">{appointment.date}, {appointment.time}</p>
-                      <p className="text-xs">{appointment.area}</p>
-                      <p className="font-semibold text-sm text-yellow-500">{appointment.status}</p>
+                      {appointment.type === "booking" ? (
+                        <>
+                          <h3 className="text-sm font-semibold">{appointment.name}</h3>
+                          <p className="text-xs">{appointment.date}, {appointment.time}</p>
+                          <p className="text-xs">{appointment.area}</p>
+                          <p className="font-semibold text-sm text-yellow-500">{appointment.status}</p>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-sm font-semibold text-red-500">⛔ Blockerad tid</h3>
+                          <p className="text-xs">{appointment.date}, {appointment.time}</p>
+                          <p className="text-xs italic">{appointment.reason}</p>
+                        </>
+                      )}
                     </div>
-                    <button
-                      className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
-                      onClick={() => handleEditClick(appointment)}
-                    >
-                      Ändra
-                    </button>
-                  </div>
 
-                  {/* Expanded form if editing */}
-                  {editingBooking?.id === appointment.id && (
-                    <div className="mt-4 p-2 border rounded bg-gray-100">
-                      <input
-                        type="date"
-                        value={editedDate}
-                        onChange={(e) => setEditedDate(e.target.value)}
-                        className="border p-2 w-full mb-2 rounded"
-                      />
-                      <input
-                        type="time"
-                        value={editedTime}
-                        onChange={(e) => setEditedTime(e.target.value)}
-                        className="border p-2 w-full mb-2 rounded"
-                      />
-                      <textarea
-                        value={editedMessage}
-                        onChange={(e) => setEditedMessage(e.target.value)}
-                        placeholder="Meddelande"
-                        className="border p-2 w-full mb-2 rounded"
-                      ></textarea>
+                    {/* BUTTONS */}
+                    {appointment.type === "booking" ? (
                       <button
-                        className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => saveChanges(appointment.id)}
+                        className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                        onClick={() => handleEditClick(appointment)}
                       >
-                        Spara ändringar
+                        Ändra
                       </button>
-                    </div>
-                  )}
+                    ) : (
+                      <button
+                        className="text-xs bg-red-400 text-black py-2 px-4 rounded-md font-bold"
+                        onClick={() => handleRemoveBlockedSlot(appointment.id)}
+                      >
+                        Ta bort blockering
+                      </button>
+                    )}
+                  </div>
                 </div>
               </li>
             ))
           ) : (
             <li>Inga bokningar för detta datum.</li>
           )}
-          </ul>
-        </div>
+        </ul>
       </div>
     </div>
+
+  </div>
   );
 };
 
