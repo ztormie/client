@@ -416,13 +416,16 @@ const fetchUnconfirmedBookings = async () => {
       const confirm = window.confirm("Är du säker på att du vill ta bort blockeringen?");
       if (!confirm) return;
     
-      const { error } = await supabase.from('blocked_slots').delete().eq('id', id);
+      const { error } = await supabase
+        .from('blocked_slots')
+        .delete()
+        .eq('id', id);
     
       if (error) {
-        console.error("Error deleting block:", error.message);
+        console.error("Fel vid borttagning av blockering:", error.message);
       } else {
-        console.log("⛔ Block deleted");
-        await refreshAllData();
+        console.log("⛔ Blockering borttagen");
+        await refreshAllData(); // Laddar om så att den försvinner från listan
       }
     };
     
@@ -680,7 +683,6 @@ const fetchUnconfirmedBookings = async () => {
                         Ta bort
                       </button>
                     </div>
-
                   )}
                   </div>
                   
