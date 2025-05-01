@@ -139,6 +139,28 @@ const AdminPage = () => {
       await refreshAllData();
     }
   };
+
+  const saveBlockChanges = async (id) => {
+    const { error } = await supabase
+      .from('blocked_slots')
+      .update({
+        start_time: editedBlockStart,
+        end_time: editedBlockEnd,
+        reason: editedBlockReason,
+      })
+      .eq('id', id);
+  
+    if (error) {
+      console.error("Failed to update block:", error.message);
+    } else {
+      console.log("⛔ Block updated");
+      setEditingBlock(null);
+      setEditedBlockStart('');
+      setEditedBlockEnd('');
+      setEditedBlockReason('');
+      await refreshAllData();
+    }
+  };
   
   
   
@@ -180,28 +202,6 @@ const AdminPage = () => {
             Vänliga hälsningar,
             Stella och Isabel
           `
-        };
-
-        const saveBlockChanges = async (id) => {
-          const { error } = await supabase
-            .from('blocked_slots')
-            .update({
-              start_time: editedBlockStart,
-              end_time: editedBlockEnd,
-              reason: editedBlockReason,
-            })
-            .eq('id', id);
-        
-          if (error) {
-            console.error("Failed to update block:", error.message);
-          } else {
-            console.log("⛔ Block updated");
-            setEditingBlock(null);
-            setEditedBlockStart('');
-            setEditedBlockEnd('');
-            setEditedBlockReason('');
-            await refreshAllData();
-          }
         };
         
 
