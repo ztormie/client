@@ -444,14 +444,30 @@ const fetchUnconfirmedBookings = async () => {
       />
       {/* Recurring weekdays */}
       <div className="flex gap-2 items-center flex-wrap">
-        {['M', 'T', 'O', 'T', 'F', 'L', 'S'].map((day, index) => (
+        {[
+          { label: "M", value: "Mon" },
+          { label: "T", value: "Tue" },
+          { label: "O", value: "Wed" },
+          { label: "T", value: "Thu" },
+          { label: "F", value: "Fri" },
+          { label: "L", value: "Sat" },
+          { label: "S", value: "Sun" }
+        ].map((day, index) => (
           <button
             key={index}
             type="button"
-            className={`px-2 py-1 border rounded ${blockDays.includes(day) ? 'bg-blue-300' : 'bg-gray-100'}`}
-            onClick={() => toggleDay(day)}
+            className={`px-2 py-1 border rounded ${
+              blockDays.includes(day.value) ? 'bg-blue-300' : 'bg-gray-100'
+            }`}
+            onClick={() =>
+              setBlockDays((prev) =>
+                prev.includes(day.value)
+                  ? prev.filter((d) => d !== day.value)
+                  : [...prev, day.value]
+              )
+            }
           >
-            {day}
+            {day.label}
           </button>
         ))}
       </div>
