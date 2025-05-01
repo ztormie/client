@@ -9,15 +9,6 @@ import { fetchBlockedSlots } from "../utils/blockedSlotsService";
 
 const AdminPage = () => {
   const navigate = useNavigate();
-  useEffect(() => {
-    async function checkAuth() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/login');
-      }
-    }
-    checkAuth();
-  }, [navigate]);
 
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -32,6 +23,16 @@ const AdminPage = () => {
   const [blockReason, setBlockReason] = useState('');
   const [blockType, setBlockType] = useState('once');
   const [blockedSlots, setBlockedSlots] = useState([]);
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+      }
+    }
+    checkAuth();
+  }, [navigate]);
 
   const formatDate = (date) => {
     const month = date.getMonth() + 1;
@@ -85,11 +86,14 @@ const AdminPage = () => {
   };
 
   const saveChanges = async (id) => {
-    const { error } = await supabase.from('bookings').update({
-      date: editedDate,
-      time: editedTime,
-      message: editedMessage,
-    }).eq('id', id);
+    const { error } = await supabase
+      .from('bookings')
+      .update({
+        date: editedDate,
+        time: editedTime,
+        message: editedMessage,
+      })
+      .eq('id', id);
 
     if (error) {
       console.error('Error saving changes:', error.message);
@@ -98,15 +102,31 @@ const AdminPage = () => {
         const emailPayload = {
           user_name: editingBooking.name,
           user_email: editingBooking.email,
-          message: `📢 Bokningsändring 📢\n\nHej ${editingBooking.name},\n\nDin bokning har ändrats!\n\nNya detaljer:\n- 📅 Datum: ${editedDate}\n- ⏰ Tid: ${editedTime}\n- 📝 Meddelande: ${editedMessage}\n\nTack för att du använder Hjälpsamma Tjänster!\n\nVänliga hälsningar,\nStella och Isabel`
+          message: `📢 Bokningsändring 📢
+
+Hej ${editingBooking.name},
+
+Din bokning har ändrats!
+
+Nya detaljer:
+- 📅 Datum: ${editedDate}
+- ⏰ Tid: ${editedTime}
+- 📝 Meddelande: ${editedMessage}
+
+Tack för att du använder Hjälpsamma Tjänster!
+
+Vänliga hälsningar,
+Stella och Isabel`
         };
 
-        await emailjs.send(
+        const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
           process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
           emailPayload,
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
+
+        console.log('Email sent successfully:', result.text);
       } catch (emailError) {
         console.error('Failed to send email:', emailError);
       }
@@ -117,12 +137,20 @@ const AdminPage = () => {
   };
 
   const approveBooking = async (id) => {
-    const { data, error } = await supabase.from("bookings").update({ status: "approved" }).eq("id", id).select();
-    if (error) return console.error("Error approving booking:", error.message);
+    const { data, error } = await supabase
+      .from("bookings")
+      .update({ status: "approved" })
+      .eq("id", id)
+      .select();
+
+    if (error) {
+      console.error("Error approving booking:", error.message);
+      return;
+    }
 
     const booking = data[0];
     try {
-      await emailjs.send(
+      const result = await emailjs.send(
         process.env.REACT_APP_EMAILJS_SERVICE_ID,
         process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
         {
@@ -133,50 +161,102 @@ const AdminPage = () => {
         },
         process.env.REACT_APP_EMAILJS_PUBLIC_KEY
       );
+
+      console.log("Confirmation email sent:", result.text);
     } catch (emailError) {
       console.error("Failed to send confirmation email:", emailError);
     }
+
     await refreshAllData();
   };
 
   const declineBooking = async (id) => {
-    const { error } = await supabase.from("bookings").update({ status: "declined" }).eq("id", id);
-    if (error) return console.error("Error declining booking:", error.message);
-    await refreshAllData();
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "declined" })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error declining booking:", error.message);
+    } else {
+      await refreshAllData();
+    }
   };
 
   const fetchUnconfirmedBookings = async () => {
-    const { data, error } = await supabase.from("bookings").select("*").eq("status", "PENDING").order("date", { ascending: true });
-    if (!error) setUnconfirmedBookings(data);
-    else console.error("Error fetching unconfirmed bookings:", error.message);
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("status", "PENDING")
+      .order("date", { ascending: true });
+
+    if (!error) {
+      setUnconfirmedBookings(data);
+    } else {
+      console.error("Error fetching unconfirmed bookings:", error.message);
+    }
   };
 
   const fetchBookings = async () => {
-    const { data, error } = await supabase.from("bookings").select("*").neq("status", "declined").order("date", { ascending: true }).limit(2);
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("*")
+      .neq("status", "declined")
+      .order("date", { ascending: true })
+      .limit(2);
+
     if (!error) setUpcomingAppointments(data);
     else console.error("Error fetching bookings:", error.message);
   };
 
   const fetchAppointmentsForSelectedDate = useCallback(async () => {
     const formattedDate = formatDate(selectedDate);
-    const { data: bookings, error: bookingsError } = await supabase.from("bookings").select("*").eq("date", formattedDate).eq("status", "approved").order("time", { ascending: true });
+    const { data: bookings } = await supabase
+      .from("bookings")
+      .select("*")
+      .eq("date", formattedDate)
+      .eq("status", "approved")
+      .order("time", { ascending: true });
+
     const blocked = await fetchBlockedSlots(formattedDate);
     const combined = [
       ...bookings.map((b) => ({ ...b, type: "booking" })),
       ...blocked.map((b) => ({ ...b, type: "blocked" }))
     ];
+
     combined.sort((a, b) => (a.time > b.time ? 1 : -1));
     setAppointmentsByDate(combined);
   }, [selectedDate]);
 
   const fetchBookedDates = async () => {
-    const { data: bookingDates, error: bookingError } = await supabase.from("bookings").select("date").not("status", "eq", "approved").neq("status", "declined");
-    const { data: blockedDates, error: blockedError } = await supabase.from("blocked_slots").select("date");
-    if (bookingError || blockedError) return console.error("Error fetching dates:", bookingError?.message || blockedError?.message);
+    const { data: bookingDates } = await supabase
+      .from("bookings")
+      .select("date")
+      .eq("status", "approved");
 
-    const allDates = [...(bookingDates?.map(b => b.date) || []), ...(blockedDates?.map(b => b.date) || [])];
-    const uniqueDates = [...new Set(allDates.map(date => new Date(date).toISOString().split("T")[0]))];
+    const { data: blockedDates } = await supabase
+      .from("blocked_slots")
+      .select("date");
+
+    const allDates = [
+      ...(bookingDates?.map(b => b.date) || []),
+      ...(blockedDates?.map(b => b.date) || []),
+    ];
+
+    const uniqueDates = [...new Set(allDates.map(date => {
+      const d = new Date(date);
+      return d.toISOString().split("T")[0];
+    }))];
+
     setBookedDates(uniqueDates);
+  };
+
+  const tileContent = ({ date }) => {
+    const dateString = date.toISOString().split("T")[0];
+    if (bookedDates.includes(dateString)) {
+      return <div className="dot" style={{ backgroundColor: "pink", borderRadius: "50%", width: "5px", height: "5px", margin: "auto" }}></div>;
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -192,15 +272,15 @@ const AdminPage = () => {
     fetchUnconfirmedBookings();
   }, []);
 
-  const tileContent = ({ date }) => {
-    const dateString = date.toISOString().split("T")[0];
-    if (bookedDates.includes(dateString)) {
-      return <div className="dot" style={{ backgroundColor: "pink", borderRadius: "50%", width: "5px", height: "5px", margin: "auto" }}></div>;
-    }
-    return null;
-  };
+  return (
+    <div className="min-h-screen bg-yellow-50">
+      <header className="bg-white text-black p-2 text-center rounded-md shadow-md mb-4 mt-4 ml-4 mr-4">
+        <h1 className="text-2xl font-bold">Boknings Översikt</h1>
+      </header>
 
-  return <></>; // UI goes here (unchanged)
+      {/* Place your existing layout blocks here if needed */}
+    </div>
+  );
 };
 
 export default AdminPage;
