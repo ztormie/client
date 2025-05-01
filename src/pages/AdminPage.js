@@ -678,7 +678,10 @@ const fetchUnconfirmedBookings = async () => {
                       </button>
                       <button
                         className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
-                        onClick={() => deleteBlock(item.id)}
+                        onClick={() => {
+                          console.log("👉 Försöker ta bort ID:", item.id);
+                          deleteBlock(item.id);
+                        }}
                       >
                         Ta bort
                       </button>

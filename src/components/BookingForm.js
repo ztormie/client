@@ -41,24 +41,51 @@ export default function BookingForm({ service }) {
     [service]
   );
 
+  const fetchBlockedSlots = useCallback(
+    async (date) => {
+      const formattedDate = new Date(date).toISOString().split("T")[0];
+      const { data, error } = await supabase
+        .from("blocked_slots")
+        .select("start_time")
+        .eq("date", formattedDate);
+  
+      if (error) {
+        console.error("Error fetching blocked slots:", error.message);
+        return [];
+      }
+  
+      return data.map((slot) => slot.start_time);
+    },
+    []
+  );
+  
+
   useEffect(() => {
     if (form.date) {
       const selectedDate = new Date(form.date);
       const slots = generateTimeSlots(selectedDate);
-
+  
       const loadAvailableSlots = async () => {
         const bookedSlots = await fetchBookedSlots(form.date);
-        const formattedBooked = bookedSlots.map((slot) => slot.trim());
+        const blockedSlots = await fetchBlockedSlots(form.date);
+  
+        const allTaken = [
+          ...bookedSlots.map((slot) => slot.trim()),
+          ...blockedSlots.map((slot) => slot.trim())
+        ];
+  
         const formattedAvailable = slots.map((slot) => slot.trim());
         const unbooked = formattedAvailable.filter(
-          (slot) => !formattedBooked.includes(slot)
+          (slot) => !allTaken.includes(slot)
         );
+  
         setAvailableSlots(unbooked);
       };
-
+  
       loadAvailableSlots();
     }
-  }, [form.date, service, fetchBookedSlots]);
+  }, [form.date, service, fetchBookedSlots, fetchBlockedSlots]);
+  
 
   const isFormComplete =
     form.name.trim() !== "" &&
