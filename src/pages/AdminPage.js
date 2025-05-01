@@ -624,34 +624,6 @@ const fetchUnconfirmedBookings = async () => {
                       ) : (
                         <>
                           <h3 className="text-sm font-semibold text-red-500">⛔ Blockerad tid</h3>
-                          {editingBlock?.id === item.id && (
-                            <div className="mt-4 p-2 border rounded bg-gray-100">
-                              <input
-                                type="time"
-                                value={editedBlockStart}
-                                onChange={(e) => setEditedBlockStart(e.target.value)}
-                                className="border p-2 w-full mb-2 rounded"
-                              />
-                              <input
-                                type="time"
-                                value={editedBlockEnd}
-                                onChange={(e) => setEditedBlockEnd(e.target.value)}
-                                className="border p-2 w-full mb-2 rounded"
-                              />
-                              <textarea
-                                value={editedBlockReason}
-                                onChange={(e) => setEditedBlockReason(e.target.value)}
-                                placeholder="Meddelande"
-                                className="border p-2 w-full mb-2 rounded"
-                              ></textarea>
-                              <button
-                                className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-                                onClick={() => saveBlockChanges(item.id)}
-                              >
-                                Spara ändringar
-                              </button>
-                            </div>
-                          )}
                           <p className="text-xs">
                             {item.date}, {item.start_time} - {item.end_time}
                           </p>
