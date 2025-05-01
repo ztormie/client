@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom'; // <-- NEW
 import emailjs from '@emailjs/browser'
 import { fetchBlockedSlots } from "../utils/blockedSlotsService";
 import { useCallback } from "react"; // <-- Already imported useState etc. Just add useCallback if not there.
-
+import { eachDayOfInterval, format, parseISO } from 'date-fns';
 
 
 const AdminPage = () => {
@@ -282,32 +282,53 @@ const fetchUnconfirmedBookings = async () => {
 
 
     const fetchBookedDates = async () => {
-        const { data: bookingDates, error: bookingError } = await supabase
-            .from("bookings")
-            .select("date")
-            .not("status", "eq", "approved")
-            .neq("status", "declined");
-
-        const { data: blockedDates, error: blockedError } = await supabase
-            .from("blocked_slots")
-            .select("date");
-
-        if (bookingError || blockedError) {
-            console.error("Error fetching dates:", bookingError?.message || blockedError?.message);
-            return;
+      const { data: bookingDates, error: bookingError } = await supabase
+        .from("bookings")
+        .select("date")
+        .not("status", "eq", "approved")
+        .neq("status", "declined");
+    
+      const { data: blockedDates, error: blockedError } = await supabase
+        .from("blocked_slots")
+        .select("date, type, day_of_week, end_date");
+    
+      if (bookingError || blockedError) {
+        console.error("Error fetching dates:", bookingError?.message || blockedError?.message);
+        return;
+      }
+    
+      let allDates = bookingDates?.map(b => b.date) || [];
+    
+      blockedDates?.forEach((block) => {
+        if (block.type === "once") {
+          allDates.push(block.date);
+        } else if (block.type === "recurring" && block.date && block.end_date && block.day_of_week) {
+          const from = parseISO(block.date);
+          const to = parseISO(block.end_date);
+    
+          const weekdays = {
+            Mon: 1,
+            Tue: 2,
+            Wed: 3,
+            Thu: 4,
+            Fri: 5,
+            Sat: 6,
+            Sun: 0,
+          };
+    
+          const blockWeekday = weekdays[block.day_of_week];
+    
+          const dates = eachDayOfInterval({ start: from, end: to });
+          dates.forEach((d) => {
+            if (d.getDay() === blockWeekday) {
+              allDates.push(format(d, "yyyy-MM-dd"));
+            }
+          });
         }
-
-        const allDates = [
-            ...(bookingDates?.map(b => b.date) || []),
-            ...(blockedDates?.map(b => b.date) || []),
-        ];
-
-        const uniqueDates = [...new Set(allDates.map(date => {
-            const d = new Date(date);
-            return d.toISOString().split("T")[0];
-        }))];
-
-        setBookedDates(uniqueDates);
+      });
+    
+      const uniqueDates = [...new Set(allDates)];
+      setBookedDates(uniqueDates);
     };
 
     // ✅ Check if user is logged in
