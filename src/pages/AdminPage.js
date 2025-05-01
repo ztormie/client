@@ -8,6 +8,7 @@ import emailjs from '@emailjs/browser'
 import { fetchBlockedSlots } from "../utils/blockedSlotsService";
 import { useCallback } from "react"; // <-- Already imported useState etc. Just add useCallback if not there.
 import { eachDayOfInterval, format, parseISO } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid'; // 🧠 Top of file, install uuid if not yet
 
 
 const AdminPage = () => {
@@ -74,40 +75,66 @@ const AdminPage = () => {
   
   const handleBlockSubmit = async (e) => {
     e.preventDefault();
-    const startDate = formatDate(selectedDate);
+    const startDate = new Date(selectedDate);
+    const endDate = blockEndDate ? new Date(blockEndDate) : null;
+    const formattedStartDate = formatDate(startDate);
   
-    if (blockDays.length > 0 && blockEndDate) {
-      for (const day of blockDays) {
-        const { error } = await supabase.from('blocked_slots').insert({
-          date: startDate,
-          start_time: blockStartTime,
-          end_time: blockEndTime,
-          reason: blockReason,
-          day_of_week: day,
-          end_date: blockEndDate,
-          type: 'recurring',
-        });
-        if (error) console.error("Recurring block error:", error.message);
+    const dayMap = {
+      Sun: 0,
+      Mon: 1,
+      Tue: 2,
+      Wed: 3,
+      Thu: 4,
+      Fri: 5,
+      Sat: 6,
+    };
+  
+    const selectedDays = blockDays.map((day) => dayMap[day]);
+  
+    const blockEntries = [];
+  
+    if (selectedDays.length > 0 && endDate) {
+      let currentDate = new Date(startDate);
+  
+      while (currentDate <= endDate) {
+        const currentDay = currentDate.getDay(); // 0–6 (Sun–Sat)
+        if (selectedDays.includes(currentDay)) {
+          blockEntries.push({
+            date: formatDate(currentDate),
+            start_time: blockStartTime,
+            end_time: blockEndTime,
+            reason: blockReason,
+            type: 'recurring',
+          });
+        }
+        currentDate.setDate(currentDate.getDate() + 1);
       }
     } else {
-      const { error } = await supabase.from('blocked_slots').insert({
-        date: startDate,
+      // Just a single block
+      blockEntries.push({
+        date: formattedStartDate,
         start_time: blockStartTime,
         end_time: blockEndTime,
         reason: blockReason,
         type: 'once',
       });
-      if (error) console.error("Single block error:", error.message);
     }
   
-    // Clear form fields
-    setBlockStartTime('');
-    setBlockEndTime('');
-    setBlockReason('');
-    setBlockDays([]);
-    setBlockEndDate('');
-    await refreshAllData();
+    const { error } = await supabase.from('blocked_slots').insert(blockEntries);
+  
+    if (error) {
+      console.error("Block insert error:", error.message);
+    } else {
+      console.log(`✅ Inserted ${blockEntries.length} block(s)`);
+      setBlockStartTime('');
+      setBlockEndTime('');
+      setBlockReason('');
+      setBlockDays([]);
+      setBlockEndDate('');
+      await refreshAllData();
+    }
   };
+  
   
   
 
