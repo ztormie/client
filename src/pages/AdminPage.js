@@ -33,10 +33,12 @@ const AdminPage = () => {
   const [editedDate, setEditedDate] = useState('');
   const [editedTime, setEditedTime] = useState('');
   const [editedMessage, setEditedMessage] = useState('');
-  const [blockTime, setBlockTime] = useState('');
   const [blockReason, setBlockReason] = useState('');
   const [blockDays, setBlockDays] = useState([]); // e.g. ['M', 'T']
   const [blockEndDate, setBlockEndDate] = useState('');
+  const [blockStartTime, setBlockStartTime] = useState('');
+  const [blockEndTime, setBlockEndTime] = useState('');
+
   
 
 
@@ -78,7 +80,8 @@ const AdminPage = () => {
       for (const day of blockDays) {
         const { error } = await supabase.from('blocked_slots').insert({
           date: startDate,
-          time: blockTime,
+          start_time: blockStartTime,
+          end_time: blockEndTime,
           reason: blockReason,
           day_of_week: day,
           end_date: blockEndDate,
@@ -89,19 +92,23 @@ const AdminPage = () => {
     } else {
       const { error } = await supabase.from('blocked_slots').insert({
         date: startDate,
-        time: blockTime,
+        start_time: blockStartTime,
+        end_time: blockEndTime,
         reason: blockReason,
         type: 'once',
       });
       if (error) console.error("Single block error:", error.message);
     }
   
-    setBlockTime('');
+    // Clear form fields
+    setBlockStartTime('');
+    setBlockEndTime('');
     setBlockReason('');
     setBlockDays([]);
     setBlockEndDate('');
     await refreshAllData();
   };
+  
   
 
   const saveChanges = async (id) => {
@@ -427,13 +434,31 @@ const fetchUnconfirmedBookings = async () => {
   <div className="md:w-1/2 bg-white p-4 rounded-md shadow-md">
     <h2 className="text-xl font-semibold mb-4">Lägg till blockering</h2>
     <form onSubmit={handleBlockSubmit} className="flex flex-col gap-2">
-      <input
-        type="time"
-        value={blockTime}
-        onChange={(e) => setBlockTime(e.target.value)}
-        className="border p-2 rounded"
-        required
-      />
+      
+      {/* Time range */}
+      <div className="flex gap-2">
+        <div className="flex flex-col w-1/2">
+          <label className="text-sm font-medium mb-1">Från</label>
+          <input
+            type="time"
+            value={blockStartTime}
+            onChange={(e) => setBlockStartTime(e.target.value)}
+            className="border p-2 rounded"
+            required
+          />
+        </div>
+        <div className="flex flex-col w-1/2">
+          <label className="text-sm font-medium mb-1">Till</label>
+          <input
+            type="time"
+            value={blockEndTime}
+            onChange={(e) => setBlockEndTime(e.target.value)}
+            className="border p-2 rounded"
+            required
+          />
+        </div>
+      </div>
+
       <input
         type="text"
         value={blockReason}
@@ -442,42 +467,48 @@ const fetchUnconfirmedBookings = async () => {
         placeholder="Anledning"
         required
       />
-      {/* Recurring weekdays */}
-      <div className="flex gap-2 items-center flex-wrap">
-        {[
-          { label: "M", value: "Mon" },
-          { label: "T", value: "Tue" },
-          { label: "O", value: "Wed" },
-          { label: "T", value: "Thu" },
-          { label: "F", value: "Fri" },
-          { label: "L", value: "Sat" },
-          { label: "S", value: "Sun" }
-        ].map((day, index) => (
-          <button
-            key={index}
-            type="button"
-            className={`px-2 py-1 border rounded ${
-              blockDays.includes(day.value) ? 'bg-blue-300' : 'bg-gray-100'
-            }`}
-            onClick={() =>
-              setBlockDays((prev) =>
-                prev.includes(day.value)
-                  ? prev.filter((d) => d !== day.value)
-                  : [...prev, day.value]
-              )
-            }
-          >
-            {day.label}
-          </button>
-        ))}
+
+      {/* Recurring options block */}
+      <div className="border border-dashed p-2 rounded-md bg-gray-50">
+        <label className="text-sm font-medium text-gray-600">Återkommande dagar:</label>
+        <div className="flex gap-2 items-center flex-wrap mt-1 mb-2">
+          {[
+            { label: "M", value: "Mon" },
+            { label: "T", value: "Tue" },
+            { label: "O", value: "Wed" },
+            { label: "T", value: "Thu" },
+            { label: "F", value: "Fri" },
+            { label: "L", value: "Sat" },
+            { label: "S", value: "Sun" }
+          ].map((day, index) => (
+            <button
+              key={index}
+              type="button"
+              className={`px-2 py-1 border rounded ${
+                blockDays.includes(day.value) ? 'bg-blue-300' : 'bg-gray-100'
+              }`}
+              onClick={() =>
+                setBlockDays((prev) =>
+                  prev.includes(day.value)
+                    ? prev.filter((d) => d !== day.value)
+                    : [...prev, day.value]
+                )
+              }
+            >
+              {day.label}
+            </button>
+          ))}
+        </div>
+
+        <label className="text-sm font-medium text-gray-600">Slutdatum (för återkommande):</label>
+        <input
+          type="date"
+          value={blockEndDate}
+          onChange={(e) => setBlockEndDate(e.target.value)}
+          className="border p-2 rounded w-full"
+        />
       </div>
-      {/* Optional end date for recurring */}
-      <input
-        type="date"
-        value={blockEndDate}
-        onChange={(e) => setBlockEndDate(e.target.value)}
-        className="border p-2 rounded"
-      />
+
       <button
         type="submit"
         className="bg-red-300 hover:bg-red-400 text-black font-bold py-2 px-4 rounded"
@@ -489,32 +520,58 @@ const fetchUnconfirmedBookings = async () => {
 </div>
 
 
+
       {/* ✅ Bokningar för valt datum */}
       <div className="p-4">
-        <h2 className="text-xl font-semibold mb-4">Bokningar för {selectedDate.toLocaleDateString()}</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          Bokningar för {selectedDate.toLocaleDateString()}
+        </h2>
         <div className="mb-6">
           <ul>
           {appointmentsByDate.length > 0 ? (
-            appointmentsByDate.map((appointment) => (
-              <li key={appointment.id} className="bg-white p-4 rounded-md shadow-md mb-4">
+            appointmentsByDate.map((item) => (
+              <li key={item.id} className="bg-white p-4 rounded-md shadow-md mb-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-sm font-semibold">{appointment.name}</h3>
-                      <p className="text-xs">{appointment.date}, {appointment.time}</p>
-                      <p className="text-xs">{appointment.area}</p>
-                      <p className="font-semibold text-sm text-yellow-500">{appointment.status}</p>
+                      {item.type === "booking" ? (
+                        <>
+                          <h3 className="text-sm font-semibold">{item.name}</h3>
+                          <p className="text-xs">
+                            {item.date}, {item.time}
+                          </p>
+                          <p className="text-xs">{item.area}</p>
+                          <p className="font-semibold text-sm text-yellow-500">
+                            {item.status}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <h3 className="text-sm font-semibold text-red-500">⛔ Blockerad tid</h3>
+                          <p className="text-xs">
+                            {item.date}, {item.start_time} - {item.end_time}
+                          </p>
+                          <p className="text-xs italic">{item.reason}</p>
+                          {item.type === "recurring" && (
+                            <p className="text-xs text-gray-500 italic">
+                              Återkommande ({item.day_of_week}) till {item.end_date}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
-                    <button
-                      className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
-                      onClick={() => handleEditClick(appointment)}
-                    >
-                      Ändra
-                    </button>
+
+                    {item.type === "booking" && (
+                      <button
+                        className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                        onClick={() => handleEditClick(item)}
+                      >
+                        Ändra
+                      </button>
+                    )}
                   </div>
 
-                  {/* Expanded form if editing */}
-                  {editingBooking?.id === appointment.id && (
+                  {editingBooking?.id === item.id && (
                     <div className="mt-4 p-2 border rounded bg-gray-100">
                       <input
                         type="date"
@@ -536,7 +593,7 @@ const fetchUnconfirmedBookings = async () => {
                       ></textarea>
                       <button
                         className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => saveChanges(appointment.id)}
+                        onClick={() => saveChanges(item.id)}
                       >
                         Spara ändringar
                       </button>
