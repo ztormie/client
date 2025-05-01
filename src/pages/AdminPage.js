@@ -624,19 +624,6 @@ const fetchUnconfirmedBookings = async () => {
                       ) : (
                         <>
                           <h3 className="text-sm font-semibold text-red-500">⛔ Blockerad tid</h3>
-                          {item.type === "blocked" && (
-                            <button
-                              className="text-xs bg-blue-200 text-black py-1 px-3 rounded-md font-bold mt-1"
-                              onClick={() => {
-                                setEditingBlock(item);
-                                setEditedBlockStart(item.start_time);
-                                setEditedBlockEnd(item.end_time);
-                                setEditedBlockReason(item.reason);
-                              }}
-                            >
-                              Ändra
-                            </button>
-                          )}
                           {editingBlock?.id === item.id && (
                             <div className="mt-4 p-2 border rounded bg-gray-100">
                               <input
