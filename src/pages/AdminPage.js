@@ -33,7 +33,11 @@ const AdminPage = () => {
   const [editedDate, setEditedDate] = useState('');
   const [editedTime, setEditedTime] = useState('');
   const [editedMessage, setEditedMessage] = useState('');
-
+  const [blockTime, setBlockTime] = useState('');
+  const [blockReason, setBlockReason] = useState('');
+  const [blockDays, setBlockDays] = useState([]); // e.g. ['M', 'T']
+  const [blockEndDate, setBlockEndDate] = useState('');
+  
 
 
   const formatDate = (date) => {
@@ -42,6 +46,13 @@ const AdminPage = () => {
     const year = date.getFullYear();
     return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`;
   };
+
+  const toggleDay = (day) => {
+    setBlockDays(prev =>
+      prev.includes(day) ? prev.filter(d => d !== day) : [...prev, day]
+    );
+  };
+ 
 
   const refreshAllData = async () => {
     await Promise.all([
@@ -59,6 +70,40 @@ const AdminPage = () => {
     setEditedMessage(appointment.message || '');
   };
   
+  const handleBlockSubmit = async (e) => {
+    e.preventDefault();
+    const startDate = formatDate(selectedDate);
+  
+    if (blockDays.length > 0 && blockEndDate) {
+      for (const day of blockDays) {
+        const { error } = await supabase.from('blocked_slots').insert({
+          date: startDate,
+          time: blockTime,
+          reason: blockReason,
+          day_of_week: day,
+          end_date: blockEndDate,
+          type: 'recurring',
+        });
+        if (error) console.error("Recurring block error:", error.message);
+      }
+    } else {
+      const { error } = await supabase.from('blocked_slots').insert({
+        date: startDate,
+        time: blockTime,
+        reason: blockReason,
+        type: 'once',
+      });
+      if (error) console.error("Single block error:", error.message);
+    }
+  
+    setBlockTime('');
+    setBlockReason('');
+    setBlockDays([]);
+    setBlockEndDate('');
+    await refreshAllData();
+  };
+  
+
   const saveChanges = async (id) => {
     const { error } = await supabase
       .from('bookings')
@@ -366,17 +411,67 @@ const fetchUnconfirmedBookings = async () => {
 
 
 
-      {/* ✅ Kalender */}
-      <div className="calendar-container p-4">
-        <h2 className="text-xl font-semibold mb-4">Kalender</h2>
-        <div className="bg-yellow-50 p-4 rounded-md shadow-md">
-          <Calendar
-            onChange={setSelectedDate}
-            value={selectedDate}
-            tileContent={tileContent}
-          />
-        </div>
+{/* ✅ Kalender och blockeringar */}
+<div className="p-4 flex flex-col md:flex-row gap-4">
+  {/* Calendar column */}
+  <div className="md:w-1/2 bg-yellow-50 p-4 rounded-md shadow-md">
+    <h2 className="text-xl font-semibold mb-4">Kalender</h2>
+    <Calendar
+      onChange={setSelectedDate}
+      value={selectedDate}
+      tileContent={tileContent}
+    />
+  </div>
+
+  {/* Blocking form column */}
+  <div className="md:w-1/2 bg-white p-4 rounded-md shadow-md">
+    <h2 className="text-xl font-semibold mb-4">Lägg till blockering</h2>
+    <form onSubmit={handleBlockSubmit} className="flex flex-col gap-2">
+      <input
+        type="time"
+        value={blockTime}
+        onChange={(e) => setBlockTime(e.target.value)}
+        className="border p-2 rounded"
+        required
+      />
+      <input
+        type="text"
+        value={blockReason}
+        onChange={(e) => setBlockReason(e.target.value)}
+        className="border p-2 rounded"
+        placeholder="Anledning"
+        required
+      />
+      {/* Recurring weekdays */}
+      <div className="flex gap-2 items-center flex-wrap">
+        {['M', 'T', 'O', 'T', 'F', 'L', 'S'].map((day, index) => (
+          <button
+            key={index}
+            type="button"
+            className={`px-2 py-1 border rounded ${blockDays.includes(day) ? 'bg-blue-300' : 'bg-gray-100'}`}
+            onClick={() => toggleDay(day)}
+          >
+            {day}
+          </button>
+        ))}
       </div>
+      {/* Optional end date for recurring */}
+      <input
+        type="date"
+        value={blockEndDate}
+        onChange={(e) => setBlockEndDate(e.target.value)}
+        className="border p-2 rounded"
+      />
+      <button
+        type="submit"
+        className="bg-red-300 hover:bg-red-400 text-black font-bold py-2 px-4 rounded"
+      >
+        Blockera tid
+      </button>
+    </form>
+  </div>
+</div>
+
 
       {/* ✅ Bokningar för valt datum */}
       <div className="p-4">
