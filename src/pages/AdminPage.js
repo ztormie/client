@@ -412,21 +412,20 @@ const fetchUnconfirmedBookings = async () => {
         fetchUnconfirmedBookings();
     }, []);
 
-const deleteBlock = async (id) => {
-  if (!window.confirm("Är du säker på att du vill ta bort blockeringen?")) return;
-
-  const { error } = await supabase
-    .from("blocked_slots")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    console.error("Fel vid borttagning:", error.message);
-  } else {
-    console.log("⛔ Blockering borttagen!");
-    await refreshAllData();
-  }
-};
+    const deleteBlock = async (id) => {
+      const confirm = window.confirm("Är du säker på att du vill ta bort blockeringen?");
+      if (!confirm) return;
+    
+      const { error } = await supabase.from('blocked_slots').delete().eq('id', id);
+    
+      if (error) {
+        console.error("Error deleting block:", error.message);
+      } else {
+        console.log("⛔ Block deleted");
+        await refreshAllData();
+      }
+    };
+    
     
 
   const tileContent = ({ date }) => {
@@ -662,7 +661,7 @@ const deleteBlock = async (id) => {
                       Ändra
                     </button>
                   ) : (
-                    <div className="flex gap-2">
+                    <div className="flex flex-col space-y-2">
                       <button
                         className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
                         onClick={() => {
@@ -675,12 +674,13 @@ const deleteBlock = async (id) => {
                         Ändra
                       </button>
                       <button
-                        className="text-xs bg-red-300 text-black py-2 px-4 rounded-md font-bold"
+                        className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
                         onClick={() => deleteBlock(item.id)}
                       >
                         Ta bort
                       </button>
                     </div>
+
                   )}
                   </div>
                   
