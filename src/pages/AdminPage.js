@@ -39,6 +39,11 @@ const AdminPage = () => {
   const [blockEndDate, setBlockEndDate] = useState('');
   const [blockStartTime, setBlockStartTime] = useState('');
   const [blockEndTime, setBlockEndTime] = useState('');
+  const [editingBlock, setEditingBlock] = useState(null);
+  const [editedBlockStart, setEditedBlockStart] = useState('');
+  const [editedBlockEnd, setEditedBlockEnd] = useState('');
+  const [editedBlockReason, setEditedBlockReason] = useState('');
+
 
   
 
@@ -176,6 +181,29 @@ const AdminPage = () => {
             Stella och Isabel
           `
         };
+
+        const saveBlockChanges = async (id) => {
+          const { error } = await supabase
+            .from('blocked_slots')
+            .update({
+              start_time: editedBlockStart,
+              end_time: editedBlockEnd,
+              reason: editedBlockReason,
+            })
+            .eq('id', id);
+        
+          if (error) {
+            console.error("Failed to update block:", error.message);
+          } else {
+            console.log("⛔ Block updated");
+            setEditingBlock(null);
+            setEditedBlockStart('');
+            setEditedBlockEnd('');
+            setEditedBlockReason('');
+            await refreshAllData();
+          }
+        };
+        
 
         console.log('Email payload:', emailPayload);
 
@@ -596,6 +624,47 @@ const fetchUnconfirmedBookings = async () => {
                       ) : (
                         <>
                           <h3 className="text-sm font-semibold text-red-500">⛔ Blockerad tid</h3>
+                          {item.type === "blocked" && (
+                            <button
+                              className="text-xs bg-blue-200 text-black py-1 px-3 rounded-md font-bold mt-1"
+                              onClick={() => {
+                                setEditingBlock(item);
+                                setEditedBlockStart(item.start_time);
+                                setEditedBlockEnd(item.end_time);
+                                setEditedBlockReason(item.reason);
+                              }}
+                            >
+                              Ändra
+                            </button>
+                          )}
+                          {editingBlock?.id === item.id && (
+                            <div className="mt-4 p-2 border rounded bg-gray-100">
+                              <input
+                                type="time"
+                                value={editedBlockStart}
+                                onChange={(e) => setEditedBlockStart(e.target.value)}
+                                className="border p-2 w-full mb-2 rounded"
+                              />
+                              <input
+                                type="time"
+                                value={editedBlockEnd}
+                                onChange={(e) => setEditedBlockEnd(e.target.value)}
+                                className="border p-2 w-full mb-2 rounded"
+                              />
+                              <textarea
+                                value={editedBlockReason}
+                                onChange={(e) => setEditedBlockReason(e.target.value)}
+                                placeholder="Meddelande"
+                                className="border p-2 w-full mb-2 rounded"
+                              ></textarea>
+                              <button
+                                className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
+                                onClick={() => saveBlockChanges(item.id)}
+                              >
+                                Spara ändringar
+                              </button>
+                            </div>
+                          )}
                           <p className="text-xs">
                             {item.date}, {item.start_time} - {item.end_time}
                           </p>
@@ -609,39 +678,51 @@ const fetchUnconfirmedBookings = async () => {
                       )}
                     </div>
 
-                    {item.type === "booking" && (
+                    {item.type === "booking" ? (
                       <button
                         className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
                         onClick={() => handleEditClick(item)}
                       >
                         Ändra
                       </button>
+                    ) : (
+                      <button
+                        className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                        onClick={() => {
+                          setEditingBlock(item);
+                          setEditedBlockStart(item.start_time || '');
+                          setEditedBlockEnd(item.end_time || '');
+                          setEditedBlockReason(item.reason || '');
+                        }}
+                      >
+                        Ändra
+                      </button>
                     )}
                   </div>
-
-                  {editingBooking?.id === item.id && (
+                  
+                  {editingBlock?.id === item.id && (
                     <div className="mt-4 p-2 border rounded bg-gray-100">
                       <input
-                        type="date"
-                        value={editedDate}
-                        onChange={(e) => setEditedDate(e.target.value)}
+                        type="time"
+                        value={editedBlockStart}
+                        onChange={(e) => setEditedBlockStart(e.target.value)}
                         className="border p-2 w-full mb-2 rounded"
                       />
                       <input
                         type="time"
-                        value={editedTime}
-                        onChange={(e) => setEditedTime(e.target.value)}
+                        value={editedBlockEnd}
+                        onChange={(e) => setEditedBlockEnd(e.target.value)}
                         className="border p-2 w-full mb-2 rounded"
                       />
                       <textarea
-                        value={editedMessage}
-                        onChange={(e) => setEditedMessage(e.target.value)}
-                        placeholder="Meddelande"
+                        value={editedBlockReason}
+                        onChange={(e) => setEditedBlockReason(e.target.value)}
+                        placeholder="Anledning"
                         className="border p-2 w-full mb-2 rounded"
                       ></textarea>
                       <button
                         className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => saveChanges(item.id)}
+                        onClick={() => saveBlockChanges(item.id)}
                       >
                         Spara ändringar
                       </button>
