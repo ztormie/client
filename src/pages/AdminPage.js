@@ -140,6 +140,7 @@ const AdminPage = () => {
     }
   };
 
+
   const saveBlockChanges = async (id) => {
     const { error } = await supabase
       .from('blocked_slots')
@@ -411,6 +412,22 @@ const fetchUnconfirmedBookings = async () => {
         fetchUnconfirmedBookings();
     }, []);
 
+const deleteBlock = async (id) => {
+  if (!window.confirm("Är du säker på att du vill ta bort blockeringen?")) return;
+
+  const { error } = await supabase
+    .from("blocked_slots")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Fel vid borttagning:", error.message);
+  } else {
+    console.log("⛔ Blockering borttagen!");
+    await refreshAllData();
+  }
+};
+    
 
   const tileContent = ({ date }) => {
     const dateString = date.toISOString().split("T")[0];
@@ -638,13 +655,14 @@ const fetchUnconfirmedBookings = async () => {
                     </div>
 
                     {item.type === "booking" ? (
-                      <button
-                        className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
-                        onClick={() => handleEditClick(item)}
-                      >
-                        Ändra
-                      </button>
-                    ) : (
+                    <button
+                      className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                      onClick={() => handleEditClick(item)}
+                    >
+                      Ändra
+                    </button>
+                  ) : (
+                    <div className="flex gap-2">
                       <button
                         className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
                         onClick={() => {
@@ -656,7 +674,14 @@ const fetchUnconfirmedBookings = async () => {
                       >
                         Ändra
                       </button>
-                    )}
+                      <button
+                        className="text-xs bg-red-300 text-black py-2 px-4 rounded-md font-bold"
+                        onClick={() => deleteBlock(item.id)}
+                      >
+                        Ta bort
+                      </button>
+                    </div>
+                  )}
                   </div>
                   
                   {editingBlock?.id === item.id && (
