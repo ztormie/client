@@ -80,6 +80,18 @@ const AdminPage = () => {
   
   const handleBlockSubmit = async (e) => {
     e.preventDefault();
+  
+    // ⛔ Kontrollera om tider är hel- eller halvtimme
+    const isValidTime = (time) => {
+      const [hours, minutes] = time.split(":").map(Number);
+      return minutes === 0 || minutes === 30;
+    };
+  
+    if (!isValidTime(blockStartTime) || !isValidTime(blockEndTime)) {
+      alert("Tider måste vara hel- eller halvtimmar, t.ex. 09:00 eller 09:30.");
+      return;
+    }
+  
     const startDate = new Date(selectedDate);
     const endDate = blockEndDate ? new Date(blockEndDate) : null;
     const formattedStartDate = formatDate(startDate);
@@ -95,7 +107,6 @@ const AdminPage = () => {
     };
   
     const selectedDays = blockDays.map((day) => dayMap[day]);
-  
     const blockEntries = [];
   
     if (selectedDays.length > 0 && endDate) {
@@ -115,7 +126,7 @@ const AdminPage = () => {
         currentDate.setDate(currentDate.getDate() + 1);
       }
     } else {
-      // Just a single block
+      // 🔒 Enstaka blockering
       blockEntries.push({
         date: formattedStartDate,
         start_time: blockStartTime,
@@ -139,6 +150,7 @@ const AdminPage = () => {
       await refreshAllData();
     }
   };
+  
 
 
   const saveBlockChanges = async (id) => {
@@ -536,6 +548,7 @@ const fetchUnconfirmedBookings = async () => {
           <label className="text-sm font-medium mb-1">Från</label>
           <input
             type="time"
+            step="1800" // 👈 detta är 1800 sekunder = 30 minuter
             value={blockStartTime}
             onChange={(e) => setBlockStartTime(e.target.value)}
             className="border p-2 rounded"
@@ -546,6 +559,7 @@ const fetchUnconfirmedBookings = async () => {
           <label className="text-sm font-medium mb-1">Till</label>
           <input
             type="time"
+            step="1800"
             value={blockEndTime}
             onChange={(e) => setBlockEndTime(e.target.value)}
             className="border p-2 rounded"
