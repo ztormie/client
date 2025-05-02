@@ -283,14 +283,7 @@ const AdminPage = () => {
 
         await refreshAllData();
     };
-    console.log("📤 Försöker skicka avvisningsmail med:");
-    console.log("Email:", booking.email);
-    console.log("Name:", booking.name);
-    console.log("Date:", booking.date);
-    console.log("Time:", booking.time);
-    console.log("Reason:", reason);
-
-
+    
     const declineBooking = async (booking) => {
       const reason = window.prompt("Ange anledning till avvisning:");
       if (!reason) return;
@@ -305,11 +298,18 @@ const AdminPage = () => {
         return;
       }
     
-      // Skicka e-post via separat avbokningsmall
+      // ✅ Lägg loggningen här
+      console.log("📤 Försöker skicka avvisningsmail med:");
+      console.log("Email:", booking.email);
+      console.log("Name:", booking.name);
+      console.log("Date:", booking.date);
+      console.log("Time:", booking.time);
+      console.log("Reason:", reason);
+    
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
-          process.env.REACT_APP_DECLINE_TEMPLATE_ID, // 👈 separat template
+          process.env.REACT_APP_DECLINE_TEMPLATE_ID,
           {
             user_name: booking.name,
             user_email: booking.email,
@@ -325,7 +325,7 @@ const AdminPage = () => {
         console.error("Failed to send decline email:", emailError);
       }
     
-      await refreshAllData(); // 🔄 uppdatera vyn
+      await refreshAllData();
     };
     
 
