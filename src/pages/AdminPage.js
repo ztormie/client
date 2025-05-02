@@ -283,6 +283,12 @@ const AdminPage = () => {
 
         await refreshAllData();
     };
+    console.log("📤 Försöker skicka avvisningsmail med:");
+    console.log("Email:", booking.email);
+    console.log("Name:", booking.name);
+    console.log("Date:", booking.date);
+    console.log("Time:", booking.time);
+    console.log("Reason:", reason);
 
 
     const declineBooking = async (booking) => {
