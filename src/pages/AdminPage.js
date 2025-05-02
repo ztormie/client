@@ -285,20 +285,53 @@ const AdminPage = () => {
     };
 
 
-  // ✅ Decline a booking
-  const declineBooking = async (id) => {
-    const { error } = await supabase
-      .from("bookings")
-      .update({ status: "declined" })
-      .eq("id", id);
-
-    if (error) {
-      console.error("Error declining booking:", error.message);
-      return;
-    }
-
-    await refreshAllData(); // 🔄 Refresh everything after update
-  };
+    const declineBooking = async (id, email, name) => {
+      const reason = window.prompt("Ange anledning till avvisning:");
+    
+      if (!reason) return;
+    
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "declined", decline_reason: reason })
+        .eq("id", id);
+    
+      if (error) {
+        console.error("Error declining booking:", error.message);
+        return;
+      }
+    
+      // Skicka e-post via EmailJS
+      try {
+        const result = await emailjs.send(
+          process.env.REACT_APP_EMAILJS_SERVICE_ID,
+          process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+          {
+            user_name: name,
+            user_email: email,
+            message: `
+              Hej ${name},
+    
+              Tyvärr har din bokning blivit avvisad av följande anledning:
+    
+              ❗ ${reason}
+    
+              Om du har några frågor, vänligen hör av dig.
+    
+              Hälsningar,
+              Stella och Isabel
+            `
+          },
+          process.env.REACT_APP_EMAILJS_PUBLIC_KEY
+        );
+    
+        console.log("Decline email sent:", result.text);
+      } catch (emailError) {
+        console.error("Failed to send decline email:", emailError);
+      }
+    
+      await refreshAllData(); // 🔄 uppdatera vyn
+    };
+    
 
   // ✅ Fetch unconfirmed bookings
 const fetchUnconfirmedBookings = async () => {
@@ -315,20 +348,20 @@ const fetchUnconfirmedBookings = async () => {
     }
   };
   
-  const fetchBookings = async () => {
-    const today = new Date().toISOString().split("T")[0];
-  
-    const { data, error } = await supabase
-      .from("bookings")
-      .select("*")
-      .neq("status", "declined")
-      .gte("date", today) // 👈 visar endast framtida eller dagens bokningar
-      .order("date", { ascending: true });
-  
-    if (!error) setUpcomingAppointments(data);
-    else console.error("Error fetching bookings:", error.message);
-  };
-  
+const fetchBookings = async () => {
+  const today = new Date().toISOString().split("T")[0];
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select("*")
+    .neq("status", "declined")
+    .gte("date", today) // 👈 visar endast framtida eller dagens bokningar
+    .order("date", { ascending: true });
+
+  if (!error) setUpcomingAppointments(data);
+  else console.error("Error fetching bookings:", error.message);
+};
+
 
     const fetchAppointmentsForSelectedDate = useCallback(async () => {
         const formattedDate = formatDate(selectedDate);
@@ -518,7 +551,8 @@ const fetchUnconfirmedBookings = async () => {
                 </button>
                 <button
                   className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
-                  onClick={() => declineBooking(booking.id)}
+                  onClick={() => declineBooking(booking.id, booking.email, booking.name)}
+
                 >
                   Avvisa
                 </button>
