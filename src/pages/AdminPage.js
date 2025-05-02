@@ -184,6 +184,22 @@ const AdminPage = () => {
     }
   };
   
+  const deleteBooking = async (id) => {
+    const confirmDelete = window.confirm("Är du säker på att du vill ta bort bokningen?");
+    if (!confirmDelete) return;
+  
+    const { error } = await supabase
+      .from("bookings")
+      .delete()
+      .eq("id", id);
+  
+    if (error) {
+      console.error("Kunde inte ta bort bokningen:", error.message);
+    } else {
+      console.log("📆 Bokning borttagen");
+      await refreshAllData(); // Ladda om datan
+    }
+  };
   
   
 
@@ -723,13 +739,21 @@ const fetchBookings = async () => {
                     </div>
 
                     {item.type === "booking" ? (
-                    <button
-                      className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
-                      onClick={() => handleEditClick(item)}
-                    >
-                      Ändra
-                    </button>
-                  ) : (
+                      <div className="flex flex-col space-y-2">
+                        <button
+                          className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
+                          onClick={() => handleEditClick(item)}
+                        >
+                          Ändra
+                        </button>
+                        <button
+                          className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
+                          onClick={() => deleteBooking(item.id)}
+                        >
+                          Ta bort
+                        </button>
+                      </div>
+                    ) : (
                     <div className="flex flex-col space-y-2">
                       <button
                         className="text-xs bg-blue-200 text-black py-2 px-4 rounded-md font-bold"
