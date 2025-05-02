@@ -285,36 +285,34 @@ const AdminPage = () => {
     };
 
 
-    const declineBooking = async (id, email, name) => {
+    const declineBooking = async (booking) => {
       const reason = window.prompt("Ange anledning till avvisning:");
-    
       if (!reason) return;
     
       const { error } = await supabase
         .from("bookings")
         .update({ status: "declined", decline_reason: reason })
-        .eq("id", id);
+        .eq("id", booking.id);
     
       if (error) {
         console.error("Error declining booking:", error.message);
         return;
       }
     
-      // Skicka e-post via EmailJS
+      // Skicka e-post via separat avbokningsmall
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
-          process.env.REACT_APP_DECLINE_TEMPLATE_ID, // 👈 ny template
+          process.env.REACT_APP_DECLINE_TEMPLATE_ID, // 👈 separat template
           {
-            user_name: name,
-            user_email: email,
+            user_name: booking.name,
+            user_email: booking.email,
             booking_date: booking.date,
             booking_time: booking.time,
             decline_reason: reason,
           },
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
-        
     
         console.log("Decline email sent:", result.text);
       } catch (emailError) {
@@ -543,7 +541,7 @@ const fetchBookings = async () => {
                 </button>
                 <button
                   className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
-                  onClick={() => declineBooking(booking.id, booking.email, booking.name)}
+                  onClick={() => declineBooking(booking)}
 
                 >
                   Avvisa
