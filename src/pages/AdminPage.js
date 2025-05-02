@@ -300,8 +300,13 @@ const AdminPage = () => {
         await refreshAllData();
     };
     
-    const declineBooking = async (booking) => {
-      const reason = window.prompt("Ange anledning till avvisning:");
+    const declineBooking = async (booking, isCancellation = false) => {
+      const reason = window.prompt(
+        isCancellation
+          ? "Ange anledning till att avboka bokningen:"
+          : "Ange anledning till att avvisa bokningen:"
+      );
+    
       if (!reason) return;
     
       const { error } = await supabase
@@ -314,14 +319,6 @@ const AdminPage = () => {
         return;
       }
     
-      // ✅ Lägg loggningen här
-      console.log("📤 Försöker skicka avvisningsmail med:");
-      console.log("Email:", booking.email);
-      console.log("Name:", booking.name);
-      console.log("Date:", booking.date);
-      console.log("Time:", booking.time);
-      console.log("Reason:", reason);
-    
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -332,13 +329,14 @@ const AdminPage = () => {
             booking_date: booking.date,
             booking_time: booking.time,
             decline_reason: reason,
+            is_cancellation: isCancellation ? "true" : "false", // kan användas i din email-template
           },
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
     
-        console.log("Decline email sent:", result.text);
+        console.log("Decline/cancel email sent:", result.text);
       } catch (emailError) {
-        console.error("Failed to send decline email:", emailError);
+        console.error("Failed to send decline/cancel email:", emailError);
       }
     
       await refreshAllData();
