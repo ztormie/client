@@ -573,7 +573,7 @@ const fetchUnconfirmedBookings = async () => {
           <label className="text-sm font-medium mb-1">Till</label>
           <select
             value={blockEndTime}
-            onChange={(e) => setblockEndTime(e.target.value)}
+            onChange={(e) => setBlockEndTime(e.target.value)}
             className="border p-2 rounded"
             required
           >
