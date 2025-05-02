@@ -309,7 +309,7 @@ const AdminPage = () => {
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
-          process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+          process.env.REACT_APP_DECLINE_TEMPLATE_ID,
           {
             user_name: booking.name,
             user_email: booking.email,
