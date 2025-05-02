@@ -83,19 +83,21 @@ export default function BookingForm({ service }) {
       const loadAvailableSlots = async () => {
         const bookedSlots = await fetchBookedSlots(form.date);
         const blockedSlots = await fetchBlockedSlots(form.date);
-  
+      
         const allTaken = [
           ...bookedSlots.map((slot) => slot.trim()),
           ...blockedSlots.map((slot) => slot.trim())
         ];
-        
+      
+        const formattedAvailable = slots.map((slot) => slot.trim()); // 🛠️ Lägg till denna rad
+      
         const unbooked = formattedAvailable.filter(
           (slot) => !allTaken.includes(slot)
         );
-        
-  
+      
         setAvailableSlots(unbooked);
       };
+      
   
       loadAvailableSlots();
     }
