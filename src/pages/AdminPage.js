@@ -304,25 +304,17 @@ const AdminPage = () => {
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
-          process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+          process.env.REACT_APP_DECLINE_TEMPLATE_ID, // 👈 ny template
           {
             user_name: name,
             user_email: email,
-            message: `
-              Hej ${name},
-    
-              Tyvärr har din bokning blivit avvisad av följande anledning:
-    
-              ❗ ${reason}
-    
-              Om du har några frågor, vänligen hör av dig.
-    
-              Hälsningar,
-              Stella och Isabel
-            `
+            booking_date: booking.date,
+            booking_time: booking.time,
+            decline_reason: reason,
           },
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
+        
     
         console.log("Decline email sent:", result.text);
       } catch (emailError) {
