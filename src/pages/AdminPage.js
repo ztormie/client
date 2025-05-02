@@ -315,18 +315,20 @@ const fetchUnconfirmedBookings = async () => {
     }
   };
   
-  // ✅ Fetch upcoming appointments
   const fetchBookings = async () => {
+    const today = new Date().toISOString().split("T")[0];
+  
     const { data, error } = await supabase
       .from("bookings")
       .select("*")
       .neq("status", "declined")
-      .order("date", { ascending: true })
-      .limit(2);
-
+      .gte("date", today) // 👈 visar endast framtida eller dagens bokningar
+      .order("date", { ascending: true });
+  
     if (!error) setUpcomingAppointments(data);
     else console.error("Error fetching bookings:", error.message);
   };
+  
 
     const fetchAppointmentsForSelectedDate = useCallback(async () => {
         const formattedDate = formatDate(selectedDate);
