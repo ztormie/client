@@ -46,7 +46,16 @@ const AdminPage = () => {
 
 
   
-
+  const generateTimeOptions = () => {
+    const times = [];
+    for (let hour = 0; hour < 24; hour++) {
+      ["00", "30"].forEach((minute) => {
+        times.push(`${hour.toString().padStart(2, "0")}:${minute}`);
+      });
+    }
+    return times;
+  };
+  
 
   const formatDate = (date) => {
     const month = date.getMonth() + 1;
@@ -546,25 +555,36 @@ const fetchUnconfirmedBookings = async () => {
       <div className="flex gap-2">
         <div className="flex flex-col w-1/2">
           <label className="text-sm font-medium mb-1">Från</label>
-          <input
-            type="time"
-            step="1800" // 👈 detta är 1800 sekunder = 30 minuter
+          <select
             value={blockStartTime}
             onChange={(e) => setBlockStartTime(e.target.value)}
             className="border p-2 rounded"
             required
-          />
+          >
+            <option value="">Välj starttid</option>
+            {generateTimeOptions().map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="flex flex-col w-1/2">
           <label className="text-sm font-medium mb-1">Till</label>
-          <input
-            type="time"
-            step="1800"
+          <select
             value={blockEndTime}
-            onChange={(e) => setBlockEndTime(e.target.value)}
+            onChange={(e) => setblockEndTime(e.target.value)}
             className="border p-2 rounded"
             required
-          />
+          >
+            <option value="">Välj starttid</option>
+            {generateTimeOptions().map((time) => (
+              <option key={time} value={time}>
+                {time}
+              </option>
+            ))}
+          </select>
+
         </div>
       </div>
 
@@ -705,18 +725,32 @@ const fetchUnconfirmedBookings = async () => {
                   
                   {editingBlock?.id === item.id && (
                     <div className="mt-4 p-2 border rounded bg-gray-100">
-                      <input
-                        type="time"
-                        value={editedBlockStart}
-                        onChange={(e) => setEditedBlockStart(e.target.value)}
-                        className="border p-2 w-full mb-2 rounded"
-                      />
-                      <input
-                        type="time"
-                        value={editedBlockEnd}
-                        onChange={(e) => setEditedBlockEnd(e.target.value)}
-                        className="border p-2 w-full mb-2 rounded"
-                      />
+                    <select
+                      value={editedBlockStart}
+                      onChange={(e) => setEditedBlockStart(e.target.value)}
+                      className="border p-2 w-full mb-2 rounded"
+                    >
+                      <option value="">Välj starttid</option>
+                      {generateTimeOptions().map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={editedBlockEnd}
+                      onChange={(e) => setEditedBlockEnd(e.target.value)}
+                      className="border p-2 w-full mb-2 rounded"
+                    >
+                      <option value="">Välj sluttid</option>
+                      {generateTimeOptions().map((time) => (
+                        <option key={time} value={time}>
+                          {time}
+                        </option>
+                      ))}
+                    </select>
+
                       <textarea
                         value={editedBlockReason}
                         onChange={(e) => setEditedBlockReason(e.target.value)}
