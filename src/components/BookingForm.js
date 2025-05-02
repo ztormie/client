@@ -36,28 +36,43 @@ export default function BookingForm({ service }) {
         return [];
       }
 
-      return data.map((booking) => booking.time);
+      return data.map((booking) => booking.time.slice(0, 5)); // så det blir "HH:MM"
+
     },
     [service]
   );
 
-  const fetchBlockedSlots = useCallback(
-    async (date) => {
-      const formattedDate = new Date(date).toISOString().split("T")[0];
-      const { data, error } = await supabase
-        .from("blocked_slots")
-        .select("start_time")
-        .eq("date", formattedDate);
+  const fetchBlockedSlots = useCallback(async (date) => {
+    const formattedDate = new Date(date).toISOString().split("T")[0];
+    const { data, error } = await supabase
+      .from("blocked_slots")
+      .select("start_time, end_time")
+      .eq("date", formattedDate);
   
-      if (error) {
-        console.error("Error fetching blocked slots:", error.message);
-        return [];
+    if (error) {
+      console.error("Error fetching blocked slots:", error.message);
+      return [];
+    }
+  
+    const toBlock = [];
+  
+    data.forEach(({ start_time, end_time }) => {
+      let [startHour, startMin] = start_time.split(":").map(Number);
+      let [endHour, endMin] = end_time.split(":").map(Number);
+  
+      const start = new Date(`1970-01-01T${start_time}`);
+      const end = new Date(`1970-01-01T${end_time}`);
+  
+      while (start < end) {
+        toBlock.push(start.toTimeString().slice(0, 5)); // "HH:MM"
+        start.setMinutes(start.getMinutes() + 30);
       }
+    });
   
-      return data.map((slot) => slot.start_time);
-    },
-    []
-  );
+    return toBlock;
+  }, []);
+  
+  
   
 
   useEffect(() => {
@@ -73,11 +88,11 @@ export default function BookingForm({ service }) {
           ...bookedSlots.map((slot) => slot.trim()),
           ...blockedSlots.map((slot) => slot.trim())
         ];
-  
-        const formattedAvailable = slots.map((slot) => slot.trim());
+        
         const unbooked = formattedAvailable.filter(
           (slot) => !allTaken.includes(slot)
         );
+        
   
         setAvailableSlots(unbooked);
       };
