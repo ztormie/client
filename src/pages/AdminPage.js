@@ -150,7 +150,6 @@ const AdminPage = () => {
     if (error) {
       console.error("Block insert error:", error.message);
     } else {
-      console.log(`✅ Inserted ${blockEntries.length} block(s)`);
       setBlockStartTime('');
       setBlockEndTime('');
       setBlockReason('');
@@ -175,7 +174,6 @@ const AdminPage = () => {
     if (error) {
       console.error("Failed to update block:", error.message);
     } else {
-      console.log("⛔ Block updated");
       setEditingBlock(null);
       setEditedBlockStart('');
       setEditedBlockEnd('');
@@ -196,7 +194,6 @@ const AdminPage = () => {
     if (error) {
       console.error("Kunde inte ta bort bokningen:", error.message);
     } else {
-      console.log("📆 Bokning borttagen");
       await refreshAllData(); // Ladda om datan
     }
   };
@@ -216,28 +213,19 @@ const AdminPage = () => {
     if (error) {
       console.error('Error saving changes:', error.message);
     } else {
-      console.log('Booking updated! Sending confirmation email...');
-  
       try {
-        console.log('Trying to send email confirmation to:', editingBooking?.email);
         const emailPayload = {
           user_name: editingBooking.name,
           user_email: editingBooking.email,
           booking_date: editedDate,   // 👈 dessa två behövs!
           booking_time: editedTime,
         };
-
-        console.log('Email payload:', emailPayload);
-
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
           process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
           emailPayload,
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
-        );
-  
-        console.log('Email sent successfully:', result.text);
-  
+        );  
       } catch (emailError) {
         console.error('Failed to send email:', emailError);
       }
@@ -261,8 +249,6 @@ const AdminPage = () => {
         }
 
         const booking = data[0];
-        console.log("Sending confirmation email for:", booking.email);
-
         try {
             const result = await emailjs.send(
                 process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -276,7 +262,6 @@ const AdminPage = () => {
                 process.env.REACT_APP_EMAILJS_PUBLIC_KEY
             );
 
-            console.log("Confirmation email sent:", result.text);
         } catch (emailError) {
             console.error("Failed to send confirmation email:", emailError);
         }
@@ -312,7 +297,6 @@ const AdminPage = () => {
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
     
-        console.log("Decline email sent:", result.text);
       } catch (emailError) {
         console.error("Failed to send decline email:", emailError);
       }
@@ -468,7 +452,6 @@ const fetchBookings = async () => {
       if (error) {
         console.error("Fel vid borttagning av blockering:", error.message);
       } else {
-        console.log("⛔ Blockering borttagen");
         await refreshAllData(); // Laddar om så att den försvinner från listan
       }
     };
@@ -747,7 +730,6 @@ const fetchBookings = async () => {
                       <button
                         className="text-xs bg-red-200 text-black py-2 px-4 rounded-md font-bold"
                         onClick={() => {
-                          console.log("👉 Försöker ta bort ID:", item.id);
                           deleteBlock(item.id);
                         }}
                       >
