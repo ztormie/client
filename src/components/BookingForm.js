@@ -29,7 +29,6 @@ export default function BookingForm({ service }) {
         .from("bookings")
         .select("time")
         .eq("date", formattedDate)
-        .eq("service_type", service);
 
       if (error) {
         console.error("Error fetching booked slots:", error.message);
