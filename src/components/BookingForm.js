@@ -116,7 +116,6 @@ export default function BookingForm({ service }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted");
   
     const errors = {};
     if (!form.name.trim()) errors.name = "Fyll i ditt namn.";
@@ -141,7 +140,6 @@ export default function BookingForm({ service }) {
     if (error) {
       alert("Fel vid bokning: " + error.message);
     } else {
-      console.log("Booking saved to database!");
   
       setForm({
         name: "",
