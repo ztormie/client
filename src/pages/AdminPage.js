@@ -577,14 +577,16 @@ const fetchBookings = async () => {
 {/* ✅ Kalender och blockeringar */}
 <div className="p-4 flex flex-col md:flex-row gap-4">
   {/* Calendar column */}
-  <div className="md:w-1/2 bg-yellow-50 p-4 rounded-md shadow-md">
-    <h2 className="text-xl font-semibold mb-4">Kalender</h2>
+  <div className="md:w-1/2 bg-white p-4 rounded-md shadow-md flex flex-col items-center">
+    <h2 className="text-xl font-semibold mb-4 self-start">Kalender</h2>
     <Calendar
       onChange={setSelectedDate}
       value={selectedDate}
       tileContent={tileContent}
+      className="w-full rounded-md"
     />
   </div>
+
 
   {/* Blocking form column */}
   <div className="md:w-1/2 bg-white p-4 rounded-md shadow-md">
