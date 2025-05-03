@@ -22,7 +22,7 @@ export default function HomePage() {
       {/* Info text */}
       <p className="text-md text-gray-700 max-w-lg gap-4 mb-6">
         Hej! Vi är Stella och Isabel, systrar som älskar att hjälpa till i vårt
-        område – oavsett om det är att rasta din hund, passa barnen eller utföra ärenden!
+        område – oavsett om det är att rasta din hund, passa barnen eller utföra ärenden! Tjänsterna är gratis! 💕 
       </p>
 
       {/* Service buttons */}
