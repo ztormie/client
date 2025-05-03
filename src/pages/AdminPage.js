@@ -300,13 +300,8 @@ const AdminPage = () => {
         await refreshAllData();
     };
     
-    const declineBooking = async (booking, isCancellation = false) => {
-      const reason = window.prompt(
-        isCancellation
-          ? "Ange anledning till att avboka bokningen:"
-          : "Ange anledning till att avvisa bokningen:"
-      );
-    
+    const declineBooking = async (booking) => {
+      const reason = window.prompt("Ange anledning till avvisning:");
       if (!reason) return;
     
       const { error } = await supabase
@@ -318,7 +313,7 @@ const AdminPage = () => {
         console.error("Error declining booking:", error.message);
         return;
       }
-    
+        
       try {
         const result = await emailjs.send(
           process.env.REACT_APP_EMAILJS_SERVICE_ID,
@@ -329,14 +324,13 @@ const AdminPage = () => {
             booking_date: booking.date,
             booking_time: booking.time,
             decline_reason: reason,
-            is_cancellation: isCancellation ? "true" : "false", // kan användas i din email-template
           },
           process.env.REACT_APP_EMAILJS_PUBLIC_KEY
         );
     
-        console.log("Decline/cancel email sent:", result.text);
+        console.log("Decline email sent:", result.text);
       } catch (emailError) {
-        console.error("Failed to send decline/cancel email:", emailError);
+        console.error("Failed to send decline email:", emailError);
       }
     
       await refreshAllData();
@@ -777,43 +771,35 @@ const fetchBookings = async () => {
                   )}
                   </div>
                   
-                  {editingBlock?.id === item.id && (
+                  {editingBooking?.id === item.id && (
                     <div className="mt-4 p-2 border rounded bg-gray-100">
-                    <select
-                      value={editedBlockStart}
-                      onChange={(e) => setEditedBlockStart(e.target.value)}
-                      className="border p-2 w-full mb-2 rounded"
-                    >
-                      <option value="">Välj starttid</option>
-                      {generateTimeOptions().map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={editedBlockEnd}
-                      onChange={(e) => setEditedBlockEnd(e.target.value)}
-                      className="border p-2 w-full mb-2 rounded"
-                    >
-                      <option value="">Välj sluttid</option>
-                      {generateTimeOptions().map((time) => (
-                        <option key={time} value={time}>
-                          {time}
-                        </option>
-                      ))}
-                    </select>
-
+                      <input
+                        type="date"
+                        value={editedDate}
+                        onChange={(e) => setEditedDate(e.target.value)}
+                        className="border p-2 w-full mb-2 rounded"
+                      />
+                      <select
+                        value={editedTime}
+                        onChange={(e) => setEditedTime(e.target.value)}
+                        className="border p-2 w-full mb-2 rounded"
+                      >
+                        <option value="">Välj tid</option>
+                        {generateTimeOptions().map((time) => (
+                          <option key={time} value={time}>
+                            {time}
+                          </option>
+                        ))}
+                      </select>
                       <textarea
-                        value={editedBlockReason}
-                        onChange={(e) => setEditedBlockReason(e.target.value)}
-                        placeholder="Anledning"
+                        value={editedMessage}
+                        onChange={(e) => setEditedMessage(e.target.value)}
+                        placeholder="Meddelande"
                         className="border p-2 w-full mb-2 rounded"
                       ></textarea>
                       <button
                         className="bg-green-300 hover:bg-green-400 text-black font-bold py-2 px-4 rounded"
-                        onClick={() => saveBlockChanges(item.id)}
+                        onClick={() => saveChanges(item.id)}
                       >
                         Spara ändringar
                       </button>
