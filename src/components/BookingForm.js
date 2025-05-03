@@ -18,12 +18,6 @@ export default function BookingForm({ service }) {
 
   const [availableSlots, setAvailableSlots] = useState([]);
   const [formErrors, setFormErrors] = useState({});
-    form.name.trim() !== "" &&
-    form.email.trim() !== "" &&
-    form.phone.trim() !== "" &&
-    form.area.trim() !== "" &&
-    form.date.trim() !== "" &&
-    form.time.trim() !== "";
 
 
   const fetchBookedSlots = useCallback(
@@ -110,6 +104,15 @@ export default function BookingForm({ service }) {
     }
   }, [form.date, service, fetchBookedSlots, fetchBlockedSlots]);
   
+
+  const isFormComplete =
+    form.name.trim() !== "" &&
+    form.email.trim() !== "" &&
+    form.phone.trim() !== "" &&
+    form.area.trim() !== "" &&
+    form.date.trim() !== "" &&
+    form.time.trim() !== "";
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
