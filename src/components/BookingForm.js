@@ -17,6 +17,7 @@ export default function BookingForm({ service }) {
   });
 
   const [availableSlots, setAvailableSlots] = useState([]);
+  const [formErrors, setFormErrors] = useState({});
 
   const fetchBookedSlots = useCallback(
     async (date) => {
@@ -103,44 +104,49 @@ export default function BookingForm({ service }) {
   }, [form.date, service, fetchBookedSlots, fetchBlockedSlots]);
   
 
-  const isFormComplete =
-    form.name.trim() !== "" &&
-    form.email.trim() !== "" &&
-    form.phone.trim() !== "" &&
-    form.area.trim() !== "" &&
-    form.date.trim() !== "" &&
-    form.time.trim() !== "";
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        console.log("Form submitted");
-
-        if (!isFormComplete) return;
-
-        const { error } = await supabase
-            .from("bookings")
-            .insert([{ ...form, service_type: service }]);
-
-        if (error) {
-            alert("Fel vid bokning: " + error.message);
-        } else {
-            console.log("Booking saved to database!");
-
-            // Clear the form after successful booking
-            setForm({
-                name: "",
-                email: "",
-                phone: "",
-                area: "",
-                message: "",
-                date: "",
-                time: "",
-            });
-
-            // Redirect after success
-            window.location.href = "/bokning/bekräftelse";
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    console.log("Form submitted");
+  
+    const errors = {};
+    if (!form.name.trim()) errors.name = "Fyll i ditt namn.";
+    if (!form.email.trim()) errors.email = "Fyll i din e-post.";
+    if (!form.phone.trim()) errors.phone = "Fyll i ditt telefonnummer.";
+    if (!form.area.trim()) errors.area = "Fyll i ditt område.";
+    if (!form.date.trim()) errors.date = "Välj ett datum.";
+    if (!form.time.trim()) errors.time = "Välj en tid.";
+  
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+  
+    // Rensa fel och skicka till Supabase
+    setFormErrors({});
+  
+    const { error } = await supabase
+      .from("bookings")
+      .insert([{ ...form, service_type: service }]);
+  
+    if (error) {
+      alert("Fel vid bokning: " + error.message);
+    } else {
+      console.log("Booking saved to database!");
+  
+      setForm({
+        name: "",
+        email: "",
+        phone: "",
+        area: "",
+        message: "",
+        date: "",
+        time: "",
+      });
+  
+      window.location.href = "/bokning/bekräftelse";
+    }
+  };
+  
 
 
   return (
@@ -148,10 +154,12 @@ export default function BookingForm({ service }) {
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Fyll i dina uppgifter:
       </h2>
-
+      <p className="text-sm text-gray-600 mb-4">
+        Alla fält markerade med * är obligatoriska.
+      </p>
       <input
         type="text"
-        placeholder="Ditt namn"
+        placeholder="Ditt namn *"
         value={form.name}
         onChange={(e) => setForm({ ...form, name: e.target.value })}
         className="w-full border border-gray-300 p-2 rounded"
@@ -160,7 +168,7 @@ export default function BookingForm({ service }) {
 
       <input
         type="email"
-        placeholder="Din e-post"
+        placeholder="Din e-post *"
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
         className="w-full border border-gray-300 p-2 rounded"
@@ -169,7 +177,7 @@ export default function BookingForm({ service }) {
 
       <input
         type="tel"
-        placeholder="Telefonnummer"
+        placeholder="Telefonnummer *"
         value={form.phone}
         onChange={(e) => setForm({ ...form, phone: e.target.value })}
         className="w-full border border-gray-300 p-2 rounded"
@@ -178,7 +186,7 @@ export default function BookingForm({ service }) {
 
       <input
         type="text"
-        placeholder="Område (t.ex. Söndrums Centrum)"
+        placeholder="Adress*"
         value={form.area}
         onChange={(e) => setForm({ ...form, area: e.target.value })}
         className="w-full border border-gray-300 p-2 rounded"
@@ -186,7 +194,7 @@ export default function BookingForm({ service }) {
       />
 
       <textarea
-        placeholder="Meddelande (Vad behöver du hjälp med?)"
+        placeholder="Meddelande (Vad behöver du hjälp med?) *"
         value={form.message}
         onChange={(e) => setForm({ ...form, message: e.target.value })}
         className="w-full border border-gray-300 p-2 rounded"
