@@ -198,9 +198,13 @@ export default function BookingForm({ service }) {
         type="date"
         value={form.date}
         onChange={(e) => setForm({ ...form, date: e.target.value })}
-        className="border border-gray-300 p-2 rounded w-full"
+        className={`border border-gray-300 p-2 rounded w-full ${
+          !form.date ? "text-gray-400" : "text-black"
+        }`}
         required
+        placeholder="Klicka för att välja datum"
       />
+
 
       {availableSlots.length > 0 && (
         <select
