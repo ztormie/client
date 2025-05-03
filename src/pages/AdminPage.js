@@ -221,26 +221,29 @@ const AdminPage = () => {
       try {
         console.log('Trying to send email confirmation to:', editingBooking?.email);
         const emailPayload = {
-          user_name: editingBooking.name, // 👈 important: use editingBooking
+          user_name: editingBooking.name,
           user_email: editingBooking.email,
+          booking_date: editedDate,    // 🟢 detta behövs om du har {{booking_date}} i mallen
+          booking_time: editedTime,    // 🟢 detta behövs om du har {{booking_time}} i mallen
           message: `
             📢 Bokningsändring 📢
-
+        
             Hej ${editingBooking.name},
-
+        
             Din bokning har ändrats!
-
+        
             Nya detaljer:
             - 📅 Datum: ${editedDate}
             - ⏰ Tid: ${editedTime}
             - 📝 Meddelande: ${editedMessage}
-
+        
             Tack för att du använder Hjälpsamma Tjänster!
-
+        
             Vänliga hälsningar,
             Stella och Isabel
           `
         };
+        
         
 
         console.log('Email payload:', emailPayload);
