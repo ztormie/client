@@ -194,14 +194,29 @@ export default function BookingForm({ service }) {
         rows="3"
       ></textarea>
 
-      <label className="text-sm text-gray-600 mb-1">Klicka för att välja datum</label>
-      <input
-        type="date"
-        value={form.date}
-        onChange={(e) => setForm({ ...form, date: e.target.value })}
-        className="border border-gray-300 p-2 rounded w-full"
-        required
-      />
+      <label htmlFor="date" className="text-sm text-gray-600 mb-1 block">Klicka för att välja datum</label>
+      <div className="relative">
+        <input
+          id="date"
+          type="date"
+          value={form.date}
+          onChange={(e) => setForm({ ...form, date: e.target.value })}
+          className="appearance-none bg-gray-100 text-gray-800 font-medium text-center p-3 rounded cursor-pointer w-full shadow-inner pr-10"
+          required
+        />
+        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 text-gray-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3M16 7V3M3 11h18M5 19h14a2 2 0 002-2V7H3v10a2 2 0 002 2z" />
+          </svg>
+        </div>
+      </div>
+
 
       {availableSlots.length > 0 && (
         <select
