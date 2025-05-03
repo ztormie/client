@@ -194,17 +194,25 @@ export default function BookingForm({ service }) {
         rows="3"
       ></textarea>
 
+      <label className="text-sm text-gray-600 mb-1">Klicka för att välja datum</label>
       <input
         type="date"
         value={form.date}
         onChange={(e) => setForm({ ...form, date: e.target.value })}
-        className={`border border-gray-300 p-2 rounded w-full ${
-          !form.date ? "text-gray-400" : "text-black"
-        }`}
+        className="border border-gray-300 p-2 rounded w-full"
         required
-        placeholder="Klicka för att välja datum"
       />
 
+      <div className="mt-4">
+        <label className="text-sm text-gray-600 mb-1">Klicka för att välja datum</label>
+        <input
+          type="date"
+          value={form.date}
+          onChange={(e) => setForm({ ...form, date: e.target.value })}
+          className="border border-gray-300 p-2 rounded w-full"
+          required
+        />
+      </div>
 
       {availableSlots.length > 0 && (
         <select
