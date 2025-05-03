@@ -12,6 +12,13 @@ export default function HomePage() {
         Hjälpsamma Tjänster <span>🐶</span>
       </h1>
 
+      {/* Illustration */}
+      <img
+        src="/framsida.png"
+        alt="Två tjejer med hund"
+        className="w-full max-w-xl h-auto rounded-2xl shadow-xl mb-10"
+      />
+
       {/* Service buttons */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-12 mb-12 w-full max-w-2xl">
         <div className="bg-red-50 shadow-md rounded-xl p-4 h-60 flex flex-col items-center justify-center">
@@ -42,12 +49,6 @@ export default function HomePage() {
         område – oavsett om det är att rasta din hund, passa barnen eller utföra ärenden!
       </p>
 
-      {/* Illustration */}
-      <img
-        src="/framsida.png"
-        alt="Två tjejer med hund"
-        className="w-full max-w-xl h-auto rounded-2xl shadow-xl mb-10"
-      />
 
       {/* Admin Icon Link */}
       <AdminIcon />
