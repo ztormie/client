@@ -28,7 +28,7 @@ export default function BookingForm({ service }) {
       }
       const formattedDate = new Date(date).toISOString().split("T")[0];
       const { data, error } = await supabase
-        .from("bookings")
+        .from("public_bookings_time")
         .select("time")
         .eq("date", formattedDate)
 
